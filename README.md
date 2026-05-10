@@ -26,6 +26,8 @@ Este proyecto está siendo desarrollado como parte de Innovatec y tiene como obj
 - Componentes reutilizables
 - Diseño responsive
 
+---
+
 ## 🔥 Funcionalidades futuras
 
 - Autenticación con Firebase
@@ -36,3 +38,42 @@ Este proyecto está siendo desarrollado como parte de Innovatec y tiene como obj
 - Publicación de empleos
 - Filtros de búsqueda
 - Soporte para idioma maya
+
+---
+
+## Get started 
+1. Instalar dependencias
+bash
+   npm install
+2. Iniciar el proyecto
+bash
+   npx expo start
+
+---
+
+## 📱 Ejecutar en dispositivo móvil
+
+Descargar Expo Go:
+
+- iOS
+- Android
+
+Después escanear el código QR generado por Expo.
+
+---
+
+## 👨‍💻 Equipo de desarrollo
+Omar Fernando Puc Ek
+Hugo Sánchez Leyva
+
+---
+
+## 🎯 Objetivo del proyecto
+
+Crear una plataforma moderna que ayude a personas de comunidades locales a encontrar oportunidades laborales cercanas de manera rápida y sencilla.
+
+---
+
+## 📄 Licencia
+
+Proyecto académico desarrollado para Innovatec.
