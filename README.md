@@ -63,8 +63,8 @@ Después escanear el código QR generado por Expo.
 ---
 
 ## 👨‍💻 Equipo de desarrollo
-Omar Fernando Puc Ek
-Hugo Sánchez Leyva
+- Omar Fernando Puc Ek
+- Hugo Sánchez Leyva
 
 ---
 
