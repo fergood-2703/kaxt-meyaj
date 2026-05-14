@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
 
   jobsSection: {
     marginTop: 35,
-    paddingBottom: 40,
+    paddingBottom: 140,
   },
 
   jobsContainer: {
