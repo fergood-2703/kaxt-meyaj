@@ -1,4 +1,5 @@
 import {
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -7,36 +8,39 @@ import {
 } from 'react-native';
 
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 import JobCard from '../components/JobCard';
 import ScreenContainer from '../components/ScreenContainer';
-
 import { jobs } from '../data/jobs';
+import { COLORS } from '../styles/colors';
 
 export default function HomeScreen() {
+  const tabBarHeight = useBottomTabBarHeight();
+
   return (
     <ScreenContainer>
       <ScrollView
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: tabBarHeight + 20,
+        }}
       >
         {/* Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>
-              Hola, Fernando 
-            </Text>
-
-            <Text style={styles.subtitle}>
-              Encuentra oportunidades cerca de ti
-            </Text>
-          </View>
-
-          <View style={styles.notificationButton}>
-            <Ionicons
-              name="notifications-outline"
-              size={24}
-              color="#111827"
+          <View style={styles.leftHeader}>
+            <Image
+              source={require('../../assets/images/isotipo.png')}
+              style={styles.logo}
             />
+            <View>
+              <Text style={styles.greeting}>
+                Hola, Fernando
+              </Text>
+              <Text style={styles.subtitle}>
+                Encuentra oportunidades cerca de ti
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -45,66 +49,32 @@ export default function HomeScreen() {
           <Ionicons
             name="search"
             size={20}
-            color="#9CA3AF"
+            color={COLORS.textSecondary}
           />
-
           <TextInput
             placeholder="Buscar empleos"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={COLORS.textSecondary}
             style={styles.searchInput}
           />
         </View>
 
         {/* Categories */}
         <View style={styles.categoriesSection}>
-          <Text style={styles.sectionTitle}>
-            Categorías
-          </Text>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-          >
+          <Text style={styles.sectionTitle}>Categorías</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.categoriesContainer}>
-              <View style={styles.categoryChip}>
-                <Text style={styles.categoryText}>
-                  Hoteles
-                </Text>
-              </View>
-
-              <View style={styles.categoryChip}>
-                <Text style={styles.categoryText}>
-                  Restaurantes
-                </Text>
-              </View>
-
-              <View style={styles.categoryChip}>
-                <Text style={styles.categoryText}>
-                  Turismo
-                </Text>
-              </View>
-
-              <View style={styles.categoryChip}>
-                <Text style={styles.categoryText}>
-                  Oficina
-                </Text>
-              </View>
-
-              <View style={styles.categoryChip}>
-                <Text style={styles.categoryText}>
-                  Construcción
-                </Text>
-              </View>
+              {['Hoteles', 'Restaurantes', 'Turismo', 'Oficina', 'Construcción'].map((cat) => (
+                <View key={cat} style={styles.categoryChip}>
+                  <Text style={styles.categoryText}>{cat}</Text>
+                </View>
+              ))}
             </View>
           </ScrollView>
         </View>
 
         {/* Jobs */}
         <View style={styles.jobsSection}>
-          <Text style={styles.sectionTitle}>
-            Vacantes recientes
-          </Text>
-
+          <Text style={styles.sectionTitle}>Vacantes recientes</Text>
           <View style={styles.jobsContainer}>
             {jobs.map((job) => (
               <JobCard
@@ -122,115 +92,93 @@ export default function HomeScreen() {
   );
 }
 
+// styles sin cambios...
 const styles = StyleSheet.create({
-  header: {
-    marginTop: 20,
-
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-
   greeting: {
     fontSize: 30,
     fontWeight: '700',
-    color: '#111827',
+    color: COLORS.primary,
   },
-
   subtitle: {
     marginTop: 8,
     fontSize: 16,
-    color: '#6B7280',
+    color: COLORS.textSecondary,
   },
-
   notificationButton: {
     width: 48,
     height: 48,
-
     borderRadius: 24,
-    backgroundColor: '#FFFFFF',
-
+    backgroundColor: COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
-
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 10,
-
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-
+    shadowOffset: { width: 0, height: 4 },
     elevation: 2,
   },
-
   searchContainer: {
     marginTop: 30,
-
     flexDirection: 'row',
     alignItems: 'center',
-
-    backgroundColor: '#FFFFFF',
-
+    backgroundColor: COLORS.white,
     borderRadius: 16,
-
     paddingHorizontal: 16,
     paddingVertical: 14,
-
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: COLORS.border,
   },
-
   searchInput: {
     flex: 1,
     marginLeft: 10,
-
     fontSize: 16,
-    color: '#111827',
+    color: COLORS.primary,
   },
-
   categoriesSection: {
     marginTop: 30,
   },
-
   sectionTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#111827',
+    color: COLORS.primary,
     marginBottom: 18,
   },
-
   categoriesContainer: {
     flexDirection: 'row',
   },
-
   categoryChip: {
-    backgroundColor: '#FFFFFF',
-
+    backgroundColor: COLORS.white,
     paddingHorizontal: 18,
     paddingVertical: 12,
-
     borderRadius: 14,
-
     marginRight: 12,
-
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: COLORS.border,
   },
-
   categoryText: {
     fontSize: 15,
     fontWeight: '600',
     color: '#374151',
   },
-
   jobsSection: {
     marginTop: 35,
-    paddingBottom: 140,
   },
-
   jobsContainer: {
     marginTop: 5,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  leftHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  logo: {
+    width: 56,
+    height: 56,
+    borderRadius: 10,
   },
 });

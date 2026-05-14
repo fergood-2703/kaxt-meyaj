@@ -13,6 +13,8 @@ type Props = {
     location: string;
 };
 
+import { COLORS } from '../styles/colors';
+
 export default function JobCard({
     title,
     company,
@@ -49,7 +51,7 @@ export default function JobCard({
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: COLORS.white,
         borderRadius: 16,
         padding: 20,
         marginBottom: 16,
@@ -68,25 +70,23 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20,
         fontWeight: '700',
-        color: '#111827',
+        color: COLORS.textPrimary,
     },
 
     company: {
         fontSize: 16,
-        color: '#6B7280',
+        color: COLORS.textSecondary,
         marginTop: 4,
     },
 
     info: {
         fontSize: 15,
-        color: '#374151',
+        color: COLORS.textSecondary,
         marginTop: 10,
     },
 
     buttonContainer: {
-        width: 140,
-        marginTop: 10,
-        alignSelf: 'flex-end',
+        marginTop: 16,
     },
 
 

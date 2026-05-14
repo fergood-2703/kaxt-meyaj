@@ -1,18 +1,24 @@
-import { StyleSheet, Text, View } from 'react-native';
+import {
+    StyleSheet,
+    Text,
+    View,
+} from 'react-native';
+
 import ScreenContainer from '../components/ScreenContainer';
+
 import { COLORS } from '../styles/colors';
 
-
-export default function ProfileScreen() {
+export default function NotificationsScreen() {
   return (
     <ScreenContainer>
       <View style={styles.container}>
         <Text style={styles.title}>
-          Perfil
-          </Text>
-          
+          Notificaciones
+        </Text>
+
         <Text style={styles.subtitle}>
-          Aquí apareceran las opciones del usuario.
+          Aquí aparecerán las ofertas de trabajo,
+          mensajes y actualizaciones.
         </Text>
       </View>
     </ScreenContainer>

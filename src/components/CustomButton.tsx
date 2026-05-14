@@ -5,6 +5,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
+import { COLORS } from '../styles/colors';
+
 type Props = {
   title: string;
   onPress?: (event: GestureResponderEvent) => void;
@@ -34,19 +36,22 @@ export default function CustomButton({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#2563EB',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 20,
-  },
+  backgroundColor: COLORS.primary,
+  paddingVertical: 14,
+  borderRadius: 14,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginTop: 20,
+  width: '100%',
+},
 
   smallButton: {
     paddingVertical: 10,
   },
 
   text: {
-    color: '#FFFFFF',
+    color: COLORS.white
+,
     fontSize: 16,
     fontWeight: '600',
   },

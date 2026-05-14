@@ -2,23 +2,31 @@ import {
   FlatList,
   StyleSheet,
   Text,
+  View,
 } from 'react-native';
 
 import JobCard from '../components/JobCard';
 import ScreenContainer from '../components/ScreenContainer';
 
 import { jobs } from '../data/jobs';
+import { COLORS } from '../styles/colors';
+
+
 
 export default function JobsScreen() {
   return (
     <ScreenContainer>
-      <Text style={styles.title}>
-        Vacantes disponibles
-      </Text>
 
-      <Text style={styles.subtitle}>
-        Encuentra oportunidades cerca de ti
-      </Text>
+      <View style={styles.container}>
+        <Text style={styles.title}>
+          Vacantes disponibles
+        </Text>
+
+        <Text style={styles.subtitle}>
+          Encuentra oportunidades cerca
+          de ti
+        </Text>
+      </View>
 
       <FlatList
         data={jobs}
@@ -39,17 +47,21 @@ export default function JobsScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#111827',
+  container: {
     marginTop: 20,
   },
 
+  title: {
+    fontSize: 34,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+
   subtitle: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: 18,
+    color: COLORS.textSecondary,
     marginTop: 10,
+    lineHeight: 28,
   },
 
   list: {

@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
+import { COLORS } from '../styles/colors';
 
 import CustomButton from '../components/CustomButton';
 import CustomInput from '../components/CustomInput';
@@ -49,7 +50,7 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   back: {
     fontSize: 16,
-    color: '#2563EB',
+    color: COLORS.primary,
     marginBottom: 20,
   },
 
@@ -60,12 +61,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#111827',
+    color: COLORS.textPrimary,
   },
 
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: COLORS.textSecondary,
     marginTop: 10,
   },
 });

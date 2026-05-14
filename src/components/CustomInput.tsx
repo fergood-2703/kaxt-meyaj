@@ -4,12 +4,15 @@ import {
     TextInputProps,
 } from 'react-native';
 
+import { COLORS } from '../styles/colors';
+
+
 export default function CustomInput(
     props: TextInputProps
 ) {
     return (
         <TextInput
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={COLORS.textSecondary}
             style={styles.input}
             {...props}
         />
@@ -18,13 +21,13 @@ export default function CustomInput(
 
 const styles = StyleSheet.create({
     input: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: COLORS.white,
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 14,
         fontSize: 16,
         marginTop: 16,
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: COLORS.border,
     },
 });
