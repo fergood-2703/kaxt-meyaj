@@ -1,25 +1,96 @@
-export const jobs = [
+// src/data/jobs.ts
+
+import { Job } from '../types';
+
+export const jobs: Job[] = [
   {
     id: '1',
     title: 'Cajero',
-    company: 'Super Willys',
+    company: {
+      id: 'c1',
+      name: 'Super Willys',
+      ownerId: 'u1',
+    },
     salary: '$8,000 MXN',
-    location: 'Felipe Carrillo Puerto',
+    location: 'Felipe Carrillo Puerto, Q. Roo',
+    category: 'oficina',
+    description:
+      'Responsable de atender a los clientes en caja, cobrar productos, dar cambio y mantener el orden en el área de pago.',
+    requirements: [
+      'Secundaria concluida',
+      'Manejo básico de computadora',
+      'Disponibilidad inmediata',
+    ],
+    benefits: ['IMSS', 'Aguinaldo', 'Vacaciones pagadas'],
+    schedule: 'Lunes a Sábado, 8:00am - 4:00pm',
+    workType: 'tiempo-completo',
+    gender: 'indistinto',
+    ageRange: { min: 18, max: 35 },
+    experienceRequired: false,
+    contactPhone: '9831234567',
+    whatsapp: '9831234567',
+    requiresCv: false,
+    postedAt: '2025-05-14',
+    urgent: false,
   },
-
   {
     id: '2',
     title: 'Mesero',
-    company: 'Restaurante El Faisán',
+    company: {
+      id: 'c2',
+      name: 'Restaurante El Faisán',
+      ownerId: 'u2',
+    },
     salary: '$9,500 MXN',
-    location: 'Tulum',
+    location: 'Tulum, Q. Roo',
+    category: 'restaurantes',
+    description:
+      'Atención a comensales, toma de pedidos, manejo de charolas y coordinación con cocina para brindar un servicio de calidad.',
+    requirements: [
+      'Experiencia mínima de 6 meses',
+      'Buena presentación',
+      'Actitud de servicio',
+    ],
+    benefits: ['Propinas', 'Comida incluida', 'IMSS'],
+    schedule: 'Martes a Domingo, 2:00pm - 11:00pm',
+    workType: 'tiempo-completo',
+    gender: 'indistinto',
+    experienceRequired: true,
+    contactPhone: '9987654321',
+    whatsapp: '9987654321',
+    requiresCv: false,
+    postedAt: '2025-05-13',
+    urgent: true,
   },
-
   {
     id: '3',
-    title: 'Auxiliar administrativo',
-    company: 'Hotel Maya Inn',
+    title: 'Auxiliar Administrativo',
+    company: {
+      id: 'c3',
+      name: 'Hotel Maya Inn',
+      ownerId: 'u3',
+    },
     salary: '$12,000 MXN',
-    location: 'Bacalar',
+    location: 'Bacalar, Q. Roo',
+    category: 'hoteles',
+    description:
+      'Apoyo en tareas administrativas del hotel: control de reservaciones, atención telefónica, manejo de documentos y coordinación con otros departamentos.',
+    requirements: [
+      'Carrera técnica o licenciatura en administración (trunca o concluida)',
+      'Manejo de Excel',
+      'Inglés básico deseable',
+    ],
+    benefits: ['IMSS', 'Aguinaldo', 'Fondo de ahorro', 'Transporte'],
+    schedule: 'Lunes a Viernes, 9:00am - 6:00pm',
+    workType: 'tiempo-completo',
+    gender: 'indistinto',
+    ageRange: { min: 20, max: 40 },
+    experienceRequired: true,
+    contactPhone: '9831112233',
+    whatsapp: '9831112233',
+    contactEmail: 'rh@hotelmayainn.com',
+    requiresCv: true,
+    postedAt: '2025-05-12',
+    urgent: false,
   },
 ];

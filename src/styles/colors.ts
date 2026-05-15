@@ -1,21 +1,27 @@
 export const COLORS = {
-  primary: '#003B8E',
+  // Colores principales de la marca
+  primary: '#003B8E',      // Azul oscuro — confianza, profesionalismo
+  secondary: '#FF7A1A',    // Naranja — energía, innovación
+  accent: '#E91E8F',       // Rosa/Fucsia — dinamismo, juventud
+  success: '#8CC63F',      // Verde lima — crecimiento, oportunidad
 
-  secondary: '#FF7A1A',
+  // Gradiente del logo (para usar en elementos hero)
+  gradientStart: '#FF7A1A',
+  gradientEnd: '#E91E8F',
 
-  accent: '#E91E8F',
+  // Fondos
+  background: '#F5F7FA',   // gris muy claro, limpio
+  surface: '#FFFFFF',      // tarjetas y modales
+  white: '#FFFFFF',
 
-  success: '#8CC63F',
-
-  background: '#F5F7FA',
-
-  surface: '#FFFFFF',
-
+  // Texto
   textPrimary: '#111827',
-
   textSecondary: '#6B7280',
 
+  // Bordes
   border: '#E5E7EB',
 
-  white: '#FFFFFF',
+  // Utilitarios semánticos
+  urgentBackground: '#FFF3CD',
+  urgentText: '#B45309',
 };

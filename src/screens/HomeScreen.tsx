@@ -77,13 +77,7 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>Vacantes recientes</Text>
           <View style={styles.jobsContainer}>
             {jobs.map((job) => (
-              <JobCard
-                key={job.id}
-                title={job.title}
-                company={job.company}
-                salary={job.salary}
-                location={job.location}
-              />
+              <JobCard key={job.id} job={job} />
             ))}
           </View>
         </View>

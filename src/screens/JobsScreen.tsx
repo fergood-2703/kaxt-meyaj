@@ -34,12 +34,7 @@ export default function JobsScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (
-          <JobCard
-            title={item.title}
-            company={item.company}
-            salary={item.salary}
-            location={item.location}
-          />
+          <JobCard job={item} />
         )}
       />
     </ScreenContainer>
