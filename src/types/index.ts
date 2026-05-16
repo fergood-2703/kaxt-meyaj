@@ -46,3 +46,33 @@ export type Job = {
   postedAt: string;
   urgent: boolean;
 };
+
+// -- CV --
+export type CVFile = {
+  uri: string;
+  name: string;
+  type: string;      // 'application/pdf', 'image/jpeg', etc
+  size?: number;
+};
+
+// -- Aplicación --
+export type ApplicationStatus = 'pendiente' | 'revisando' | 'aceptado' | 'rechazado';
+
+export type Application = {
+  id: string;
+  jobId: string;
+  userId: string;
+  status: ApplicationStatus;
+  appliedAt: string;
+  cvAttached: boolean;
+};
+
+// -- Usuario (lo usaremos como estado global provisional) --
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  cv?: CVFile;
+  applications: Application[];
+};
