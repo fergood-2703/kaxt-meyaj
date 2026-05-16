@@ -15,12 +15,11 @@ import {
   CurrencyDollar,
   GenderIntersex,
   MapPin,
-  Phone,
   Star,
-  UserCircle,
-  WhatsappLogo,
+  UserCircle
 } from 'phosphor-react-native';
 
+import ApplyButton from '../components/ApplyButton';
 import ScreenContainer from '../components/ScreenContainer';
 import { jobs } from '../data/jobs';
 import { COLORS } from '../styles/colors';
@@ -177,28 +176,7 @@ export default function JobDetailScreen() {
 
         {/* Botones */}
         <View style={styles.actions}>
-          {job.whatsapp && (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.whatsappButton]}
-              onPress={handleWhatsApp}
-              activeOpacity={0.85}
-            >
-              <WhatsappLogo size={20} color={COLORS.white} weight="fill" />
-              <Text style={styles.actionButtonText}>Contactar por WhatsApp</Text>
-            </TouchableOpacity>
-          )}
-          {job.contactPhone && (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.callButton]}
-              onPress={handleCall}
-              activeOpacity={0.85}
-            >
-              <Phone size={20} color={COLORS.primary} weight="bold" />
-              <Text style={[styles.actionButtonText, { color: COLORS.primary }]}>
-                Llamar
-              </Text>
-            </TouchableOpacity>
-          )}
+          <ApplyButton job={job} />
         </View>
       </ScrollView>
     </ScreenContainer>
