@@ -76,3 +76,38 @@ export type User = {
   cv?: CVFile;
   applications: Application[];
 };
+
+// -- Notificaciones --
+export type NotificationType =
+  | 'postulacion_enviada'
+  | 'empresa_interesada'
+  | 'postulacion_revisando'
+  | 'postulacion_aceptada'
+  | 'postulacion_rechazada'
+  | 'vacante_nueva'
+  | 'perfil_incompleto'
+  | 'cv_faltante'
+  | 'mensaje';
+
+export type Notification = {
+  id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  timestamp: string;
+  read: boolean;
+  jobId?: string;
+  companyName?: string;
+};
+
+// -- Mensajes --
+export type MessageThread = {
+  id: string;
+  companyName: string;
+  jobTitle: string;
+  lastMessage: string;
+  timestamp: string;
+  read: boolean;
+  contactPhone?: string;
+  whatsapp?: string;
+};
