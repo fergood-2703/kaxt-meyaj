@@ -1,47 +1,62 @@
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowRight, Eye, EyeSlash, LockKey, UserCircle } from 'phosphor-react-native';
 import { useState } from 'react';
 
-import CustomInput from '../components/CustomInput';
 import { useUser } from '../context/UserContext';
 import { COLORS } from '../styles/colors';
 
+// ─── Cuenta demo ──────────────────────────────────────────────────────────────
+// Eliminar cuando el backend esté listo y reemplazar handleLogin
+// con: await api.post('/auth/login', { email, password })
+const DEMO_ACCOUNT = {
+  name:     'Fernando',
+  email:    'demo@kaxtmeyaj.com',
+  password: 'kaxt2024',
+};
+
 export default function LoginScreen() {
-  const router = useRouter();
-  const params = useLocalSearchParams();
+  const router  = useRouter();
+  const params  = useLocalSearchParams();
   const { login, continueAsGuest } = useUser();
 
-  // Si viene con ?prompt=true es porque intentó entrar a una tab protegida
   const isPrompted = params.prompt === 'true';
 
-  const [name, setName]           = useState('');
-  const [email, setEmail]         = useState('');
-  const [password, setPassword]   = useState('');
-  const [showPass, setShowPass]   = useState(false);
-  const [error, setError]         = useState('');
+  const [email,    setEmail]    = useState('');
+  const [password, setPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
+  const [error,    setError]    = useState('');
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleLogin = () => {
-    if (!name.trim() || !email.trim()) {
-      setError('Por favor ingresa tu nombre y correo.');
+    if (!email.trim() || !password.trim()) {
+      setError('Ingresa tu correo y contraseña.');
       return;
     }
-    setError('');
-    // Backend TODO: await api.post('/auth/login', { email, password })
-    // Por ahora mock: cualquier nombre/email pasa
-    login(name.trim(), email.trim());
-    router.replace('/');
+    // Backend TODO: reemplazar con await api.post('/auth/login', { email, password })
+    if (
+      email.trim().toLowerCase() === DEMO_ACCOUNT.email &&
+      password === DEMO_ACCOUNT.password
+    ) {
+      setError('');
+      login(DEMO_ACCOUNT.name, DEMO_ACCOUNT.email);
+      router.replace('/');
+      return;
+    }
+    setError('Correo o contraseña incorrectos.');
   };
 
   const handleGuest = () => {
@@ -49,8 +64,10 @@ export default function LoginScreen() {
     router.replace('/');
   };
 
-  const handleRegister = () => {
-    router.push('/register');
+  const fillDemo = () => {
+    setEmail(DEMO_ACCOUNT.email);
+    setPassword(DEMO_ACCOUNT.password);
+    setError('');
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -67,17 +84,24 @@ export default function LoginScreen() {
       >
         {/* ── Hero ── */}
         <View style={styles.hero}>
-          {/* Logo placeholder — reemplazar con <Image source={...} /> cuando haya asset */}
-          <View style={styles.logoBox}>
-            <Text style={styles.logoLetter}>K</Text>
+          <Image
+            source={require('../../assets/images/isotipo.png')}
+            style={styles.logo}
+          />
+          <View style={styles.appNameRow}>
+            <Text style={styles.appNameKaxt}>KAXT </Text>
+            <Text style={styles.appNameMeyaj}>MEYAJ</Text>
           </View>
-          <Text style={styles.appName}>Kaxt Meyaj</Text>
-          <Text style={styles.tagline}>
-            Conectamos talento local con oportunidades reales en Quintana Roo
-          </Text>
+          <LinearGradient
+            colors={['#FF7A1A', '#E91E8F']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.gradientBar}
+          />
+          <Text style={styles.tagline}>Tu talento, tu lugar</Text>
         </View>
 
-        {/* ── Banner si viene de tab protegida ── */}
+        {/* ── Banner prompt ── */}
         {isPrompted && (
           <View style={styles.promptBanner}>
             <LockKey size={16} color="#92400E" weight="bold" />
@@ -87,68 +111,86 @@ export default function LoginScreen() {
           </View>
         )}
 
+        {/* ── Cuenta demo ── */}
+        <View style={styles.demoCard}>
+          <Text style={styles.demoTitle}>Cuenta de prueba</Text>
+          <View style={styles.demoRow}>
+            <Text style={styles.demoLabel}>Correo</Text>
+            <Text style={styles.demoValue}>{DEMO_ACCOUNT.email}</Text>
+          </View>
+          <View style={styles.demoRow}>
+            <Text style={styles.demoLabel}>Contraseña</Text>
+            <Text style={styles.demoValue}>{DEMO_ACCOUNT.password}</Text>
+          </View>
+          <TouchableOpacity style={styles.demoFillButton} onPress={fillDemo}>
+            <Text style={styles.demoFillButtonText}>Usar esta cuenta</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* ── Formulario ── */}
         <View style={styles.form}>
           <Text style={styles.formTitle}>Iniciar sesión</Text>
 
-          <CustomInput
-            placeholder="Tu nombre"
-            value={name}
-            onChangeText={setName}
-            autoCapitalize="words"
-            returnKeyType="next"
-          />
-
-          <CustomInput
+          {/* Correo */}
+          <TextInput
+            style={styles.input}
             placeholder="Correo electrónico"
+            placeholderTextColor={COLORS.textSecondary}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(t) => { setEmail(t); setError(''); }}
             keyboardType="email-address"
             autoCapitalize="none"
             returnKeyType="next"
           />
 
-          {/* Input contraseña con ojo */}
-          <View style={styles.passwordWrapper}>
-            <CustomInput
+          {/* Contraseña — row con ojo dentro */}
+          <View style={styles.inputRow}>
+            <TextInput
+              style={styles.inputFlex}
               placeholder="Contraseña"
+              placeholderTextColor={COLORS.textSecondary}
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(t) => { setPassword(t); setError(''); }}
               secureTextEntry={!showPass}
               returnKeyType="done"
               onSubmitEditing={handleLogin}
-              style={styles.passwordInput}
             />
             <TouchableOpacity
-              style={styles.eyeButton}
               onPress={() => setShowPass((v) => !v)}
+              style={styles.eyeButton}
             >
               {showPass
                 ? <EyeSlash size={20} color={COLORS.textSecondary} />
-                : <Eye size={20} color={COLORS.textSecondary} />
+                : <Eye      size={20} color={COLORS.textSecondary} />
               }
             </TouchableOpacity>
           </View>
 
-          {/* Error */}
           {error !== '' && (
             <Text style={styles.errorText}>{error}</Text>
           )}
 
-          {/* Botón entrar */}
+          {/* Botón entrar con degradado */}
           <TouchableOpacity
-            style={styles.loginButton}
             onPress={handleLogin}
             activeOpacity={0.85}
+            style={styles.loginButtonWrapper}
           >
-            <Text style={styles.loginButtonText}>Entrar</Text>
-            <ArrowRight size={18} color={COLORS.white} weight="bold" />
+            <LinearGradient
+              colors={['#FF7A1A', '#E91E8F']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.loginButton}
+            >
+              <Text style={styles.loginButtonText}>Entrar</Text>
+              <ArrowRight size={18} color={COLORS.white} weight="bold" />
+            </LinearGradient>
           </TouchableOpacity>
 
-          {/* Ir a registro */}
+          {/* Crear cuenta */}
           <TouchableOpacity
             style={styles.registerButton}
-            onPress={handleRegister}
+            onPress={() => router.push('/register')}
             activeOpacity={0.85}
           >
             <UserCircle size={18} color={COLORS.primary} weight="bold" />
@@ -163,7 +205,7 @@ export default function LoginScreen() {
           <View style={styles.dividerLine} />
         </View>
 
-        {/* ── Continuar como invitado ── */}
+        {/* ── Invitado ── */}
         <TouchableOpacity
           style={styles.guestButton}
           onPress={handleGuest}
@@ -191,47 +233,49 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     paddingHorizontal: 28,
-    paddingTop: 72,
+    paddingTop: 64,
     paddingBottom: 40,
   },
 
   // ── Hero
   hero: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 28,
   },
-  logoBox: {
-    width: 80,
-    height: 80,
-    borderRadius: 22,
-    backgroundColor: COLORS.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
+  logo: {
+    width: 88,
+    height: 88,
+    borderRadius: 20,
     marginBottom: 16,
-    shadowColor: COLORS.secondary,
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
   },
-  logoLetter: {
-    fontSize: 40,
-    fontWeight: '800',
-    color: COLORS.white,
+  appNameRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
   },
-  appName: {
-    fontSize: 30,
+  appNameKaxt: {
+    fontSize: 32,
     fontWeight: '800',
     color: COLORS.primary,
-    letterSpacing: -0.5,
+    letterSpacing: 1,
+  },
+  appNameMeyaj: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#E91E8F',
+    letterSpacing: 1,
+  },
+  gradientBar: {
+    height: 3,
+    borderRadius: 2,
+    width: 200,
+    marginTop: 4,
+    marginBottom: 8,
   },
   tagline: {
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: 8,
-    lineHeight: 22,
-    paddingHorizontal: 16,
+    fontStyle: 'italic',
+    letterSpacing: 0.3,
   },
 
   // ── Banner prompt
@@ -243,7 +287,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    marginBottom: 20,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: '#FDE68A',
   },
@@ -252,6 +296,53 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#92400E',
     flex: 1,
+  },
+
+  // ── Demo card
+  demoCard: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    gap: 6,
+  },
+  demoTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  demoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  demoLabel: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    width: 72,
+  },
+  demoValue: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.primary,
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  },
+  demoFillButton: {
+    marginTop: 6,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+  },
+  demoFillButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.white,
   },
 
   // ── Formulario
@@ -274,24 +365,41 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 
-  // ── Password
-  passwordWrapper: {
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  passwordInput: {
-    paddingRight: 48,
-  },
-  eyeButton: {
-    position: 'absolute',
-    right: 14,
-    top: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    padding: 4,
+  // Input base — igual que CustomInput
+  input: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    color: COLORS.textPrimary,
   },
 
-  // ── Error
+  // Input contraseña con ojo — todo en un row, sin position absolute
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginTop: 16,
+    paddingHorizontal: 16,
+  },
+  inputFlex: {
+    flex: 1,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: COLORS.textPrimary,
+  },
+  eyeButton: {
+    paddingLeft: 8,
+    paddingVertical: 14,
+  },
+
   errorText: {
     fontSize: 13,
     color: '#DC2626',
@@ -299,22 +407,26 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
 
-  // ── Botones del form
+  // Botón entrar
+  loginButtonWrapper: {
+    marginTop: 20,
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
   loginButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: COLORS.primary,
     paddingVertical: 15,
-    borderRadius: 14,
-    marginTop: 20,
   },
   loginButtonText: {
     fontSize: 16,
     fontWeight: '700',
     color: COLORS.white,
   },
+
+  // Crear cuenta
   registerButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -333,7 +445,7 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
 
-  // ── Divider
+  // Divider
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -351,7 +463,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  // ── Invitado
+  // Invitado
   guestButton: {
     paddingVertical: 14,
     borderRadius: 14,
