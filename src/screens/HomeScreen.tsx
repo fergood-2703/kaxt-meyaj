@@ -10,6 +10,7 @@ import {
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   Briefcase,
   Buildings,
@@ -22,65 +23,119 @@ import { useState } from 'react';
 
 import JobCard from '../components/JobCard';
 import ScreenContainer from '../components/ScreenContainer';
+import { useUser } from '../context/UserContext';
 import { jobs } from '../data/jobs';
 import { COLORS } from '../styles/colors';
 import { Category } from '../types';
 
-// Ciudades extraídas de los datos
 const CITIES = ['Todas', 'Felipe Carrillo Puerto', 'Tulum', 'Bacalar'];
 
-const CATEGORIES: { label: string; value: Category | 'todas'; icon: React.ReactNode }[] = [
-  {
-    label: 'Todas',
-    value: 'todas',
-    icon: <Briefcase size={20} weight="bold" />,
-  },
-  {
-    label: 'Hoteles',
-    value: 'hoteles',
-    icon: <Buildings size={20} weight="bold" />,
-  },
-  {
-    label: 'Restaurantes',
-    value: 'restaurantes',
-    icon: <ForkKnife size={20} weight="bold" />,
-  },
-  {
-    label: 'Turismo',
-    value: 'turismo',
-    icon: <Sunglasses size={20} weight="bold" />,
-  },
-  {
-    label: 'Oficina',
-    value: 'oficina',
-    icon: <Briefcase size={20} weight="bold" />,
-  },
-  {
-    label: 'Construcción',
-    value: 'construccion',
-    icon: <Hammer size={20} weight="bold" />,
-  },
+const CATEGORIES: { label: string; value: Category | 'todas' }[] = [
+  { label: 'Todas',        value: 'todas'        },
+  { label: 'Hoteles',      value: 'hoteles'      },
+  { label: 'Restaurantes', value: 'restaurantes' },
+  { label: 'Turismo',      value: 'turismo'      },
+  { label: 'Oficina',      value: 'oficina'      },
+  { label: 'Construcción', value: 'construccion' },
 ];
 
-export default function HomeScreen() {
-  const tabBarHeight = useBottomTabBarHeight();
+function CategoryIcon({ value, active }: { value: string; active: boolean }) {
+  const color = active ? COLORS.white : COLORS.primary;
+  const size  = 18;
+  const w     = 'bold' as const;
+  switch (value) {
+    case 'hoteles':      return <Buildings  size={size} color={color} weight={w} />;
+    case 'restaurantes': return <ForkKnife  size={size} color={color} weight={w} />;
+    case 'turismo':      return <Sunglasses size={size} color={color} weight={w} />;
+    case 'construccion': return <Hammer     size={size} color={color} weight={w} />;
+    default:             return <Briefcase  size={size} color={color} weight={w} />;
+  }
+}
 
-  const [search, setSearch] = useState('');
+// ─── Header invitado con degradado ───────────────────────────────────────────
+// expo-linear-gradient no puede hacer degradado DENTRO del texto directamente,
+// pero podemos usarlo como fondo de un contenedor con el texto encima en blanco,
+// o bien hacer el truco de MaskedView. La solución más limpia sin MaskedView
+// es poner el degradado como fondo de un pill/badge detrás del nombre.
+// Aquí usamos la técnica de texto partido: cada palabra con su color del logo,
+// más grande que antes, con el degradado visible en una barra decorativa abajo.
+function GuestHeader() {
+  return (
+    <View style={guestStyles.wrapper}>
+      {/* Nombre de la app — KAXT en azul, MEYAJ en rosa fucsia del logo */}
+      <View style={guestStyles.nameRow}>
+        <Text style={guestStyles.nameKaxt}>KAXT </Text>
+        <Text style={guestStyles.nameMeyaj}>MEYAJ</Text>
+      </View>
+
+      {/* Barra degradada decorativa debajo del nombre */}
+      <LinearGradient
+        colors={['#FF7A1A', '#E91E8F']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={guestStyles.gradientBar}
+      />
+
+      {/* Eslogan */}
+      <Text style={guestStyles.slogan}>Tu talento, tu lugar</Text>
+    </View>
+  );
+}
+
+const guestStyles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  nameKaxt: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: COLORS.primary,      // #003B8E azul oscuro
+    letterSpacing: 0.5,
+  },
+  nameMeyaj: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#E91E8F',            // rosa/fucsia del logo
+    letterSpacing: 0.5,
+  },
+  gradientBar: {
+    height: 3,
+    borderRadius: 2,
+    marginTop: 3,
+    width: '85%',
+  },
+  slogan: {
+    marginTop: 4,
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontStyle: 'italic',
+    letterSpacing: 0.3,
+  },
+});
+
+// ─── Screen principal ─────────────────────────────────────────────────────────
+
+export default function HomeScreen() {
+  const tabBarHeight             = useBottomTabBarHeight();
+  const { isLoggedIn, user }     = useUser();
+
+  const [search,           setSearch]           = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | 'todas'>('todas');
-  const [selectedCity, setSelectedCity] = useState('Todas');
+  const [selectedCity,     setSelectedCity]      = useState('Todas');
 
   const filteredJobs = jobs.filter((job) => {
     const matchesSearch =
       search === '' ||
       job.title.toLowerCase().includes(search.toLowerCase()) ||
       job.company.name.toLowerCase().includes(search.toLowerCase());
-
     const matchesCategory =
       selectedCategory === 'todas' || job.category === selectedCategory;
-
     const matchesCity =
       selectedCity === 'Todas' || job.location.includes(selectedCity);
-
     return matchesSearch && matchesCategory && matchesCity;
   });
 
@@ -90,19 +145,25 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: tabBarHeight + 20 }}
       >
-        {/* Header */}
+        {/* ── Header dinámico ── */}
         <View style={styles.header}>
           <View style={styles.leftHeader}>
             <Image
               source={require('../../assets/images/isotipo.png')}
               style={styles.logo}
             />
-            <View>
-              <Text style={styles.greeting}>Hola, Fernando</Text>
-              <Text style={styles.subtitle}>
-                Encuentra oportunidades cerca de ti
-              </Text>
-            </View>
+            {isLoggedIn ? (
+              <View>
+                <Text style={styles.greeting}>
+                  Hola, {user.name.split(' ')[0]}
+                </Text>
+                <Text style={styles.subtitle}>
+                  Encuentra oportunidades cerca de ti
+                </Text>
+              </View>
+            ) : (
+              <GuestHeader />
+            )}
           </View>
         </View>
 
@@ -154,62 +215,12 @@ export default function HomeScreen() {
                 return (
                   <TouchableOpacity
                     key={cat.value}
-                    style={[
-                      styles.categoryChip,
-                      isActive && styles.categoryChipActive,
-                    ]}
+                    style={[styles.categoryChip, isActive && styles.categoryChipActive]}
                     onPress={() => setSelectedCategory(cat.value)}
                     activeOpacity={0.75}
                   >
-                    {/* Ícono con color dinámico */}
-                    {cat.value === 'todas' && (
-                      <Briefcase
-                        size={18}
-                        color={isActive ? COLORS.white : COLORS.primary}
-                        weight="bold"
-                      />
-                    )}
-                    {cat.value === 'hoteles' && (
-                      <Buildings
-                        size={18}
-                        color={isActive ? COLORS.white : COLORS.primary}
-                        weight="bold"
-                      />
-                    )}
-                    {cat.value === 'restaurantes' && (
-                      <ForkKnife
-                        size={18}
-                        color={isActive ? COLORS.white : COLORS.primary}
-                        weight="bold"
-                      />
-                    )}
-                    {cat.value === 'turismo' && (
-                      <Sunglasses
-                        size={18}
-                        color={isActive ? COLORS.white : COLORS.primary}
-                        weight="bold"
-                      />
-                    )}
-                    {cat.value === 'oficina' && (
-                      <Briefcase
-                        size={18}
-                        color={isActive ? COLORS.white : COLORS.primary}
-                        weight="bold"
-                      />
-                    )}
-                    {cat.value === 'construccion' && (
-                      <Hammer
-                        size={18}
-                        color={isActive ? COLORS.white : COLORS.primary}
-                        weight="bold"
-                      />
-                    )}
-                    <Text
-                      style={[
-                        styles.categoryText,
-                        isActive && styles.categoryTextActive,
-                      ]}
-                    >
+                    <CategoryIcon value={cat.value} active={isActive} />
+                    <Text style={[styles.categoryText, isActive && styles.categoryTextActive]}>
                       {cat.label}
                     </Text>
                   </TouchableOpacity>
@@ -232,19 +243,11 @@ export default function HomeScreen() {
                 return (
                   <TouchableOpacity
                     key={city}
-                    style={[
-                      styles.cityChip,
-                      isActive && styles.cityChipActive,
-                    ]}
+                    style={[styles.cityChip, isActive && styles.cityChipActive]}
                     onPress={() => setSelectedCity(city)}
                     activeOpacity={0.75}
                   >
-                    <Text
-                      style={[
-                        styles.cityText,
-                        isActive && styles.cityTextActive,
-                      ]}
-                    >
+                    <Text style={[styles.cityText, isActive && styles.cityTextActive]}>
                       {city}
                     </Text>
                   </TouchableOpacity>
@@ -283,6 +286,8 @@ export default function HomeScreen() {
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
@@ -309,8 +314,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textSecondary,
   },
-
-  // Search
   searchContainer: {
     marginTop: 20,
     flexDirection: 'row',
@@ -328,8 +331,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: COLORS.textPrimary,
   },
-
-  // Stats
   statsRow: {
     flexDirection: 'row',
     gap: 10,
@@ -357,8 +358,6 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 2,
   },
-
-  // Sections
   section: {
     marginTop: 24,
   },
@@ -374,8 +373,6 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     marginBottom: 12,
   },
-
-  // Category chips
   categoriesContainer: {
     flexDirection: 'row',
     gap: 8,
@@ -403,8 +400,6 @@ const styles = StyleSheet.create({
   categoryTextActive: {
     color: COLORS.white,
   },
-
-  // City chips
   cityChip: {
     backgroundColor: COLORS.white,
     paddingHorizontal: 14,
@@ -426,8 +421,6 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontWeight: '600',
   },
-
-  // Empty state
   emptyState: {
     alignItems: 'center',
     paddingVertical: 48,
