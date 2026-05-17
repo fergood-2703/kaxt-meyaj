@@ -1,5 +1,4 @@
 import {
-  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,19 +13,23 @@ import {
   Calendar,
   CurrencyDollar,
   GenderIntersex,
+  LockSimple,
   MapPin,
   Star,
-  UserCircle
+  UserCircle,
 } from 'phosphor-react-native';
 
 import ApplyButton from '../components/ApplyButton';
 import ScreenContainer from '../components/ScreenContainer';
+import { useUser } from '../context/UserContext';
 import { jobs } from '../data/jobs';
 import { COLORS } from '../styles/colors';
 
 export default function JobDetailScreen() {
-  const { id } = useLocalSearchParams();
-  const router = useRouter();
+  const { id }   = useLocalSearchParams();
+  const router   = useRouter();
+  const { isLoggedIn } = useUser();
+  const isGuest  = !isLoggedIn;
 
   const job = jobs.find((j) => j.id === id);
 
@@ -38,15 +41,62 @@ export default function JobDetailScreen() {
     );
   }
 
-  const handleWhatsApp = () => {
-    const message = `Hola, vi la vacante de *${job.title}* en Kaxt Meyaj y me interesa. ¿Podría darme más información?`;
-    const url = `https://wa.me/52${job.whatsapp}?text=${encodeURIComponent(message)}`;
-    Linking.openURL(url);
-  };
+  // ── Gate para invitados ───────────────────────────────────────────────────
+  // Si llegan directamente a esta URL sin sesión, mostramos
+  // una pantalla de bloqueo en lugar del contenido.
+  if (isGuest) {
+    return (
+      <ScreenContainer>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <ArrowLeft size={20} color={COLORS.primary} weight="bold" />
+          <Text style={styles.backText}>Regresar</Text>
+        </TouchableOpacity>
 
-  const handleCall = () => {
-    Linking.openURL(`tel:${job.contactPhone}`);
-  };
+        {/* Encabezado con título visible */}
+        <View style={styles.gateHeader}>
+          <Text style={styles.gateJobTitle}>{job.title}</Text>
+          <Text style={styles.gateLocation}>{job.location}</Text>
+        </View>
+
+        {/* Card de bloqueo */}
+        <View style={styles.gateCard}>
+          <View style={styles.gateLockCircle}>
+            <LockSimple size={36} color={COLORS.primary} weight="bold" />
+          </View>
+
+          <Text style={styles.gateTitle}>
+            Inicia sesión para ver los detalles
+          </Text>
+          <Text style={styles.gateBody}>
+            El salario, horario, requisitos y datos de contacto de esta
+            vacante solo están disponibles para usuarios registrados.
+          </Text>
+
+          <TouchableOpacity
+            style={styles.gateLoginButton}
+            onPress={() => router.push('/login')}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.gateLoginButtonText}>Iniciar sesión</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.gateRegisterButton}
+            onPress={() => router.push('/register')}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.gateRegisterButtonText}>Crear cuenta gratis</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.back()} style={styles.gateBackLink}>
+            <Text style={styles.gateBackLinkText}>Volver a las vacantes</Text>
+          </TouchableOpacity>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  // ── Vista completa (usuario con sesión) ───────────────────────────────────
 
   const workTypeLabel = {
     'tiempo-completo': 'Tiempo completo',
@@ -62,7 +112,6 @@ export default function JobDetailScreen() {
 
   return (
     <ScreenContainer>
-      {/* Botón atrás */}
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <ArrowLeft size={20} color={COLORS.primary} weight="bold" />
         <Text style={styles.backText}>Regresar</Text>
@@ -74,7 +123,6 @@ export default function JobDetailScreen() {
       >
         {/* Encabezado */}
         <View style={styles.header}>
-          {/* Badges */}
           {(job.urgent || job.requiresCv || !job.experienceRequired) && (
             <View style={styles.badgesRow}>
               {job.urgent && (
@@ -94,7 +142,6 @@ export default function JobDetailScreen() {
               )}
             </View>
           )}
-
           <Text style={styles.title}>{job.title}</Text>
           <Text style={styles.company}>{job.company.name}</Text>
         </View>
@@ -174,7 +221,6 @@ export default function JobDetailScreen() {
           </View>
         </Section>
 
-        {/* Botones */}
         <View style={styles.actions}>
           <ApplyButton job={job} />
         </View>
@@ -183,11 +229,9 @@ export default function JobDetailScreen() {
   );
 }
 
-function InfoRow({
-  icon,
-  label,
-  value,
-}: {
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function InfoRow({ icon, label, value }: {
   icon: React.ReactNode;
   label: string;
   value: string;
@@ -201,10 +245,7 @@ function InfoRow({
   );
 }
 
-function Section({
-  title,
-  children,
-}: {
+function Section({ title, children }: {
   title: string;
   children: React.ReactNode;
 }) {
@@ -215,6 +256,8 @@ function Section({
     </View>
   );
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   backButton: {
@@ -230,7 +273,92 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // Header
+  // ── Gate
+  gateHeader: {
+    marginBottom: 20,
+  },
+  gateJobTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginBottom: 4,
+  },
+  gateLocation: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  gateCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    padding: 28,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+    gap: 10,
+  },
+  gateLockCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  gateTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    textAlign: 'center',
+  },
+  gateBody: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
+    paddingHorizontal: 8,
+  },
+  gateLoginButton: {
+    width: '100%',
+    paddingVertical: 14,
+    borderRadius: 14,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  gateLoginButtonText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.white,
+  },
+  gateRegisterButton: {
+    width: '100%',
+    paddingVertical: 13,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
+    alignItems: 'center',
+  },
+  gateRegisterButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  gateBackLink: {
+    paddingVertical: 8,
+  },
+  gateBackLinkText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    textDecoration: 'underline',
+  } as any,
+
+  // ── Header
   header: {
     marginBottom: 20,
   },
@@ -284,7 +412,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
 
-  // Info card
+  // ── Info card
   infoCard: {
     backgroundColor: COLORS.white,
     borderRadius: 16,
@@ -323,7 +451,7 @@ const styles = StyleSheet.create({
     marginVertical: 6,
   },
 
-  // Sections
+  // ── Sections
   section: {
     marginBottom: 24,
   },
@@ -357,8 +485,6 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 22,
   },
-
-  // Beneficios
   chipsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -377,34 +503,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: COLORS.textPrimary,
   },
-
-  // Botones de acción
   actions: {
     gap: 10,
     marginBottom: 10,
   },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    paddingVertical: 14,
-    borderRadius: 14,
-  },
-  whatsappButton: {
-    backgroundColor: '#25D366',  // verde WhatsApp oficial
-  },
-  callButton: {
-    backgroundColor: COLORS.white,
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-  },
-  actionButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.white,
-  },
-
   notFound: {
     fontSize: 16,
     color: COLORS.textSecondary,
