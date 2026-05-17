@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   FlatList,
   Linking,
@@ -6,11 +5,10 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { useRouter } from 'expo-router';
 import {
   Bell,
   BellSimpleSlash,
@@ -25,19 +23,22 @@ import {
   WhatsappLogo,
   X,
 } from 'phosphor-react-native';
+import { useState } from 'react';
 
 import ScreenContainer from '../components/ScreenContainer';
-import { mockMessages, mockNotifications } from '../data/notifications';
+import { useUser } from '../context/UserContext';
+import { mockMessages } from '../data/notifications';
 import { COLORS } from '../styles/colors';
 import { MessageThread, Notification, NotificationType } from '../types';
 
-// ── Helpers ───────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function timeAgo(timestamp: string): string {
-  const diff = Date.now() - new Date(timestamp).getTime();
+  const diff  = Date.now() - new Date(timestamp).getTime();
   const mins  = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days  = Math.floor(diff / 86400000);
+  if (mins < 1)   return 'ahora';
   if (mins < 60)  return `${mins}m`;
   if (hours < 24) return `${hours}h`;
   return `${days}d`;
@@ -58,9 +59,12 @@ function notificationIcon(type: NotificationType) {
     case 'postulacion_rechazada':
       return <Warning size={size} color={COLORS.accent} weight="fill" />;
     case 'vacante_nueva':
+    case 'vacante_guardada':
       return <Briefcase size={size} color={COLORS.primary} weight="fill" />;
+    case 'cv_subido':
     case 'cv_faltante':
     case 'perfil_incompleto':
+    case 'bienvenida':
       return <UserCircle size={size} color={COLORS.secondary} weight="fill" />;
     default:
       return <Bell size={size} color={COLORS.textSecondary} weight="fill" />;
@@ -70,57 +74,49 @@ function notificationIcon(type: NotificationType) {
 function notificationColor(type: NotificationType): string {
   switch (type) {
     case 'empresa_interesada':
-    case 'mensaje':         return '#EFF6FF';
+    case 'mensaje':               return '#EFF6FF';
     case 'postulacion_enviada':
-    case 'postulacion_aceptada': return '#DCFCE7';
+    case 'postulacion_aceptada':  return '#DCFCE7';
     case 'postulacion_revisando': return '#FEF3C7';
     case 'postulacion_rechazada': return '#FDE8F0';
-    case 'vacante_nueva':  return '#EFF6FF';
+    case 'vacante_nueva':
+    case 'vacante_guardada':      return '#EFF6FF';
+    case 'cv_subido':
+    case 'bienvenida':            return '#DCFCE7';
     case 'cv_faltante':
-    case 'perfil_incompleto': return '#FEF3C7';
-    default:               return COLORS.background;
+    case 'perfil_incompleto':     return '#FEF3C7';
+    default:                      return COLORS.background;
   }
 }
 
-// ── Tab types ─────────────────────────────────────────────────
 type Tab = 'notificaciones' | 'mensajes';
 
-// ── Componente principal ──────────────────────────────────────
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
 export default function NotificationsScreen() {
   const tabBarHeight = useBottomTabBarHeight();
-  const router       = useRouter();
 
-  const [activeTab, setActiveTab]           = useState<Tab>('notificaciones');
-  const [notifications, setNotifications]   = useState(mockNotifications);
-  const [messages]                          = useState(mockMessages);
+  // Notificaciones vienen del contexto global (no más mock)
+  const { notifications, markAsRead, markAllAsRead, unreadCount } = useUser();
+
+  const [activeTab, setActiveTab]             = useState<Tab>('notificaciones');
+  const [messages]                            = useState(mockMessages);
   const [selectedMessage, setSelectedMessage] = useState<MessageThread | null>(null);
 
-  const unreadNotifications = notifications.filter((n) => !n.read).length;
-  const unreadMessages      = messages.filter((m) => !m.read).length;
+  const unreadMessages = messages.filter((m) => !m.read).length;
 
-  const markAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
+  // ── Render notificación ───────────────────────────────────────────────────
 
-  const markRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-  };
-
-  // ── Render notificación ──────────────────────────────────────
   const renderNotification = ({ item }: { item: Notification }) => (
     <TouchableOpacity
       style={[styles.notifCard, !item.read && styles.notifCardUnread]}
-      onPress={() => markRead(item.id)}
+      onPress={() => markAsRead(item.id)}
       activeOpacity={0.75}
     >
-      {/* Ícono */}
       <View style={[styles.notifIconBox, { backgroundColor: notificationColor(item.type) }]}>
         {notificationIcon(item.type)}
       </View>
 
-      {/* Contenido */}
       <View style={styles.notifContent}>
         <View style={styles.notifHeader}>
           <Text style={styles.notifTitle} numberOfLines={1}>
@@ -133,26 +129,24 @@ export default function NotificationsScreen() {
         </Text>
       </View>
 
-      {/* Indicador no leído */}
       {!item.read && <View style={styles.unreadDot} />}
     </TouchableOpacity>
   );
 
-  // ── Render mensaje ────────────────────────────────────────────
+  // ── Render mensaje ────────────────────────────────────────────────────────
+
   const renderMessage = ({ item }: { item: MessageThread }) => (
     <TouchableOpacity
       style={[styles.messageCard, !item.read && styles.notifCardUnread]}
       onPress={() => setSelectedMessage(item)}
       activeOpacity={0.75}
     >
-      {/* Avatar empresa */}
       <View style={styles.companyAvatar}>
         <Text style={styles.companyAvatarText}>
           {item.companyName.charAt(0)}
         </Text>
       </View>
 
-      {/* Info */}
       <View style={styles.messageContent}>
         <View style={styles.notifHeader}>
           <Text style={styles.messageCompany} numberOfLines={1}>
@@ -171,7 +165,8 @@ export default function NotificationsScreen() {
     </TouchableOpacity>
   );
 
-  // ── Empty states ─────────────────────────────────────────────
+  // ── Empty states ──────────────────────────────────────────────────────────
+
   const EmptyNotifications = (
     <View style={styles.emptyState}>
       <BellSimpleSlash size={52} color={COLORS.border} weight="thin" />
@@ -192,6 +187,8 @@ export default function NotificationsScreen() {
     </View>
   );
 
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <ScreenContainer>
       {/* Header */}
@@ -207,9 +204,8 @@ export default function NotificationsScreen() {
           </Text>
         </View>
 
-        {/* Marcar todo como leído */}
-        {activeTab === 'notificaciones' && unreadNotifications > 0 && (
-          <TouchableOpacity onPress={markAllRead} style={styles.markAllButton}>
+        {activeTab === 'notificaciones' && unreadCount > 0 && (
+          <TouchableOpacity onPress={markAllAsRead} style={styles.markAllButton}>
             <CheckCircle size={16} color={COLORS.primary} weight="bold" />
             <Text style={styles.markAllText}>Leer todo</Text>
           </TouchableOpacity>
@@ -227,15 +223,12 @@ export default function NotificationsScreen() {
             color={activeTab === 'notificaciones' ? COLORS.white : COLORS.textSecondary}
             weight="bold"
           />
-          <Text style={[
-            styles.tabText,
-            activeTab === 'notificaciones' && styles.tabTextActive,
-          ]}>
+          <Text style={[styles.tabText, activeTab === 'notificaciones' && styles.tabTextActive]}>
             Actividad
           </Text>
-          {unreadNotifications > 0 && (
+          {unreadCount > 0 && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>{unreadNotifications}</Text>
+              <Text style={styles.badgeText}>{unreadCount}</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -249,10 +242,7 @@ export default function NotificationsScreen() {
             color={activeTab === 'mensajes' ? COLORS.white : COLORS.textSecondary}
             weight="bold"
           />
-          <Text style={[
-            styles.tabText,
-            activeTab === 'mensajes' && styles.tabTextActive,
-          ]}>
+          <Text style={[styles.tabText, activeTab === 'mensajes' && styles.tabTextActive]}>
             Mensajes
           </Text>
           {unreadMessages > 0 && (
@@ -263,7 +253,7 @@ export default function NotificationsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Contenido */}
+      {/* Listas */}
       {activeTab === 'notificaciones' ? (
         <FlatList
           data={notifications}
@@ -284,7 +274,7 @@ export default function NotificationsScreen() {
         />
       )}
 
-      {/* Modal de contacto */}
+      {/* Modal contacto */}
       <Modal
         visible={!!selectedMessage}
         transparent
@@ -293,7 +283,6 @@ export default function NotificationsScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-            {/* Cerrar */}
             <TouchableOpacity
               style={styles.modalClose}
               onPress={() => setSelectedMessage(null)}
@@ -301,7 +290,6 @@ export default function NotificationsScreen() {
               <X size={20} color={COLORS.textSecondary} />
             </TouchableOpacity>
 
-            {/* Avatar */}
             <View style={styles.modalAvatar}>
               <Text style={styles.modalAvatarText}>
                 {selectedMessage?.companyName.charAt(0)}
@@ -315,8 +303,9 @@ export default function NotificationsScreen() {
 
             <View style={styles.modalDivider} />
 
+            {/* Fix: comillas rectas, sin tipográficas */}
             <Text style={styles.modalMessage}>
-              "{selectedMessage?.lastMessage}"
+              {'"'}{selectedMessage?.lastMessage}{'"'}
             </Text>
 
             <Text style={styles.modalLabel}>Contactar a la empresa</Text>
@@ -360,7 +349,8 @@ export default function NotificationsScreen() {
   );
 }
 
-// ── Estilos ───────────────────────────────────────────────────
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
@@ -390,8 +380,6 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '600',
   },
-
-  // Tabs
   tabsRow: {
     flexDirection: 'row',
     gap: 8,
@@ -434,8 +422,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.white,
   },
-
-  // Notificaciones
   notifCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -493,8 +479,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     marginTop: 4,
   },
-
-  // Mensajes
   messageCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -542,8 +526,6 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 3,
   },
-
-  // Empty
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
@@ -562,8 +544,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     paddingHorizontal: 30,
   },
-
-  // Modal contacto
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',

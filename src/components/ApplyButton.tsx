@@ -1,23 +1,23 @@
 import { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Modal,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import {
-    CheckCircle,
-    FilePdf,
-    Image,
-    PaperPlaneTilt,
-    Upload,
-    X,
+  CheckCircle,
+  FilePdf,
+  Image,
+  PaperPlaneTilt,
+  Upload,
+  X,
 } from 'phosphor-react-native';
 
 import { useUser } from '../context/UserContext';
@@ -29,41 +29,51 @@ type Props = {
 };
 
 export default function ApplyButton({ job }: Props) {
-  const { user, setCv, addApplication, hasApplied } = useUser();
+  const { user, setCv, addApplication, hasApplied, addNotification } = useUser();
 
-  const [showCvModal, setShowCvModal]       = useState(false);
+  const [showCvModal, setShowCvModal]           = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [uploading, setUploading]           = useState(false);
+  const [uploading, setUploading]               = useState(false);
 
   const alreadyApplied = hasApplied(job.id);
 
-  // ── Aplicar ──────────────────────────────────────────────────
+  // ── Aplicar ───────────────────────────────────────────────────────────────
+
   const handleApply = () => {
     if (alreadyApplied) return;
-
-    // Si requiere CV y no tiene → mostrar modal
     if (job.requiresCv && !user.cv) {
       setShowCvModal(true);
       return;
     }
-
-    // Aplicar directamente
     submitApplication();
   };
 
-  const submitApplication = () => {
+  const submitApplication = (cvAttached = !!user.cv) => {
+    // 1. Guardar postulación en el contexto
     addApplication({
       id: Date.now().toString(),
       jobId: job.id,
       userId: user.id,
       status: 'pendiente',
       appliedAt: new Date().toISOString(),
-      cvAttached: !!user.cv,
+      cvAttached,
     });
+
+    // 2. Notificación automática en el centro de notificaciones
+    // Backend TODO: este addNotification también hará POST /api/notifications
+    addNotification({
+      type: 'postulacion_enviada',
+      title: 'Postulación enviada',
+      body: `Tu solicitud para "${job.title}" en ${job.company.name} fue enviada. Te avisaremos cuando la revisen.`,
+      jobId: job.id,
+      companyName: job.company.name,
+    });
+
     setShowSuccessModal(true);
   };
 
-  // ── Subir CV ─────────────────────────────────────────────────
+  // ── Subir CV ──────────────────────────────────────────────────────────────
+
   const pickDocument = async () => {
     try {
       setUploading(true);
@@ -85,7 +95,7 @@ export default function ApplyButton({ job }: Props) {
           size: file.size,
         });
         setShowCvModal(false);
-        submitApplication();
+        submitApplication(true);
       }
     } catch {
       Alert.alert('Error', 'No se pudo cargar el archivo.');
@@ -118,7 +128,7 @@ export default function ApplyButton({ job }: Props) {
           size: file.fileSize,
         });
         setShowCvModal(false);
-        submitApplication();
+        submitApplication(true);
       }
     } catch {
       Alert.alert('Error', 'No se pudo cargar la imagen.');
@@ -127,15 +137,12 @@ export default function ApplyButton({ job }: Props) {
     }
   };
 
-  // ── Render ───────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <>
-      {/* Botón principal */}
       <TouchableOpacity
-        style={[
-          styles.applyButton,
-          alreadyApplied && styles.applyButtonDone,
-        ]}
+        style={[styles.applyButton, alreadyApplied && styles.applyButtonDone]}
         onPress={handleApply}
         activeOpacity={0.85}
         disabled={alreadyApplied}
@@ -162,8 +169,6 @@ export default function ApplyButton({ job }: Props) {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-
-            {/* Cerrar */}
             <TouchableOpacity
               style={styles.modalClose}
               onPress={() => setShowCvModal(false)}
@@ -171,7 +176,6 @@ export default function ApplyButton({ job }: Props) {
               <X size={20} color={COLORS.textSecondary} />
             </TouchableOpacity>
 
-            {/* Ícono */}
             <View style={styles.modalIcon}>
               <Upload size={32} color={COLORS.primary} weight="bold" />
             </View>
@@ -193,7 +197,6 @@ export default function ApplyButton({ job }: Props) {
               />
             ) : (
               <View style={styles.modalActions}>
-                {/* PDF / Word */}
                 <TouchableOpacity
                   style={styles.uploadOption}
                   onPress={pickDocument}
@@ -204,13 +207,10 @@ export default function ApplyButton({ job }: Props) {
                   </View>
                   <View style={styles.uploadInfo}>
                     <Text style={styles.uploadTitle}>Subir PDF o Word</Text>
-                    <Text style={styles.uploadSubtitle}>
-                      Formatos: .pdf, .doc, .docx
-                    </Text>
+                    <Text style={styles.uploadSubtitle}>Formatos: .pdf, .doc, .docx</Text>
                   </View>
                 </TouchableOpacity>
 
-                {/* Imagen */}
                 <TouchableOpacity
                   style={styles.uploadOption}
                   onPress={pickImage}
@@ -221,9 +221,7 @@ export default function ApplyButton({ job }: Props) {
                   </View>
                   <View style={styles.uploadInfo}>
                     <Text style={styles.uploadTitle}>Subir imagen</Text>
-                    <Text style={styles.uploadSubtitle}>
-                      Foto de tu CV en JPG o PNG
-                    </Text>
+                    <Text style={styles.uploadSubtitle}>Foto de tu CV en JPG o PNG</Text>
                   </View>
                 </TouchableOpacity>
               </View>
@@ -251,8 +249,8 @@ export default function ApplyButton({ job }: Props) {
               <Text style={{ fontWeight: '700', color: COLORS.primary }}>
                 {job.title}
               </Text>{' '}
-              en {job.company.name} fue enviada correctamente.{'\n\n'}
-              Te notificaremos cuando la empresa revise tu perfil.
+              en {job.company.name} fue enviada.{'\n\n'}
+              Revisa tus notificaciones para ver el estado.
             </Text>
 
             <TouchableOpacity
@@ -269,7 +267,6 @@ export default function ApplyButton({ job }: Props) {
 }
 
 const styles = StyleSheet.create({
-  // Botón
   applyButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -288,8 +285,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.white,
   },
-
-  // Modal base
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -331,8 +326,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginBottom: 8,
   },
-
-  // Opciones de subida
   modalActions: {
     marginTop: 16,
     gap: 12,
@@ -367,8 +360,6 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 2,
   },
-
-  // Éxito
   successButton: {
     marginTop: 20,
     backgroundColor: COLORS.primary,

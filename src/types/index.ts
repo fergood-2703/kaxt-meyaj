@@ -1,6 +1,12 @@
 export type WorkType = 'tiempo-completo' | 'medio-tiempo' | 'por-horas';
 export type Gender = 'hombre' | 'mujer' | 'indistinto';
-export type Category = 'hoteles' | 'restaurantes' | 'turismo' | 'oficina' | 'construccion' | 'otro';
+export type Category =
+  | 'hoteles'
+  | 'restaurantes'
+  | 'turismo'
+  | 'oficina'
+  | 'construccion'
+  | 'otro';
 export type UserRole = 'candidato' | 'empresario';
 
 export type Company = {
@@ -53,9 +59,6 @@ export type Application = {
   cvAttached: boolean;
 };
 
-// ─── favorites: array de jobId ───────────────────────────────────────────────
-// Cuando haya backend: User.favorites vendrá del endpoint GET /users/me
-// y toggleFavorite llamará a POST/DELETE /users/me/favorites/:jobId
 export type User = {
   id: string;
   name: string;
@@ -63,9 +66,12 @@ export type User = {
   role: UserRole;
   cv?: CVFile;
   applications: Application[];
-  favorites: string[];   // ← nuevo campo
+  favorites: string[];
 };
 
+// ─── Notificaciones ───────────────────────────────────────────────────────────
+// Backend TODO: GET /api/notifications  →  poblar array al hacer login
+// Cada addNotification() será también POST /api/notifications
 export type NotificationType =
   | 'postulacion_enviada'
   | 'empresa_interesada'
@@ -73,8 +79,11 @@ export type NotificationType =
   | 'postulacion_aceptada'
   | 'postulacion_rechazada'
   | 'vacante_nueva'
+  | 'vacante_guardada'   // al guardar favorito
   | 'perfil_incompleto'
+  | 'cv_subido'          // al subir/cambiar CV
   | 'cv_faltante'
+  | 'bienvenida'         // al completar registro
   | 'mensaje';
 
 export type Notification = {
