@@ -1,6 +1,8 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, Tabs, useRootNavigationState, useRouter } from 'expo-router';
 import { Bell, Heart, House, MagnifyingGlass, User } from 'phosphor-react-native';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useUser } from '../../src/context/UserContext';
 import { COLORS } from '../../src/styles/colors';
 
@@ -11,7 +13,7 @@ const ACTIVE_COLORS = {
   profile:       COLORS.primary,
 };
 
-// ─── Badge de notificaciones ──────────────────────────────────────────────────
+// ─── Badge notificaciones ─────────────────────────────────────────────────────
 function NotificationIcon({ focused }: { focused: boolean }) {
   const { unreadCount } = useUser();
   return (
@@ -30,22 +32,60 @@ function NotificationIcon({ focused }: { focused: boolean }) {
   );
 }
 
-// ─── Layout principal ─────────────────────────────────────────────────────────
+// ─── Botón Home ───────────────────────────────────────────────────────────────
+// Activo   → degradado naranja→fucsia, sobresale con marginBottom, sombra rosa
+// Inactivo → ícono gris igual que los demás tabs, sin elevación ni marginBottom
+function HomeButton({ focused }: { focused: boolean }) {
+  // Anima el marginBottom: sube cuando activo, vuelve al nivel de los demás cuando no
+  const lift = useRef(new Animated.Value(focused ? 26 : 0)).current;
+
+  useEffect(() => {
+    Animated.spring(lift, {
+      toValue: focused ? 26 : 0,
+      useNativeDriver: false, // marginBottom no soporta native driver
+      tension: 120,
+      friction: 8,
+    }).start();
+  }, [focused]);
+
+  if (!focused) {
+    // Inactivo — exactamente igual que los demás íconos
+    return (
+      <House
+        size={28}
+        color="#9CA3AF"
+        weight="regular"
+      />
+    );
+  }
+
+  // Activo — degradado elevado
+  return (
+    <Animated.View style={[styles.homeButtonWrapper, { marginBottom: lift }]}>
+      <LinearGradient
+        colors={['#FF7A1A', '#E91E8F']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.homeButtonGradient}
+      >
+        <House size={32} color={COLORS.white} weight="fill" />
+      </LinearGradient>
+    </Animated.View>
+  );
+}
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
 export default function TabsLayout() {
   const { isLoggedIn, isGuest } = useUser();
   const router                  = useRouter();
   const navigationState         = useRootNavigationState();
 
-  // Esperar a que el navigator esté listo antes de evaluar redirects.
-  // Sin este guard el primer render ve segments vacíos y redirige mal.
   if (!navigationState?.key) return null;
 
-  // Si no hay sesión ni modo invitado → mandar al login
   if (!isLoggedIn && !isGuest) {
     return <Redirect href="/login" />;
   }
 
-  // ── Protección de tabs para invitados ────────────────────────────────────
   const handleProtectedPress = (href: string) => {
     if (!isLoggedIn) {
       router.push('/login?prompt=true');
@@ -86,7 +126,7 @@ export default function TabsLayout() {
         },
       }}
     >
-      {/* Búsqueda — accesible como invitado */}
+      {/* Búsqueda */}
       <Tabs.Screen
         name="search"
         options={{
@@ -123,15 +163,11 @@ export default function TabsLayout() {
         }}
       />
 
-      {/* Home — accesible como invitado */}
+      {/* Home */}
       <Tabs.Screen
         name="index"
         options={{
-          tabBarIcon: () => (
-            <View style={styles.homeButton}>
-              <House size={34} color={COLORS.white} weight="fill" />
-            </View>
-          ),
+          tabBarIcon: ({ focused }) => <HomeButton focused={focused} />,
         }}
       />
 
@@ -179,20 +215,23 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  homeButton: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: COLORS.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 26,
-    shadowColor: COLORS.secondary,
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
+  // Botón Home activo
+  homeButtonWrapper: {
+    shadowColor: '#E91E8F',
+    shadowOpacity: 0.45,
+    shadowRadius: 14,
     shadowOffset: { width: 0, height: 5 },
     elevation: 8,
   },
+  homeButtonGradient: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Badge notificaciones
   dot: {
     width: 8,
     height: 8,
