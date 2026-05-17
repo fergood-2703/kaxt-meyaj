@@ -52,76 +52,9 @@ function CategoryIcon({ value, active }: { value: string; active: boolean }) {
   }
 }
 
-// ─── Header invitado con degradado ───────────────────────────────────────────
-// expo-linear-gradient no puede hacer degradado DENTRO del texto directamente,
-// pero podemos usarlo como fondo de un contenedor con el texto encima en blanco,
-// o bien hacer el truco de MaskedView. La solución más limpia sin MaskedView
-// es poner el degradado como fondo de un pill/badge detrás del nombre.
-// Aquí usamos la técnica de texto partido: cada palabra con su color del logo,
-// más grande que antes, con el degradado visible en una barra decorativa abajo.
-function GuestHeader() {
-  return (
-    <View style={guestStyles.wrapper}>
-      {/* Nombre de la app — KAXT en azul, MEYAJ en rosa fucsia del logo */}
-      <View style={guestStyles.nameRow}>
-        <Text style={guestStyles.nameKaxt}>KAXT </Text>
-        <Text style={guestStyles.nameMeyaj}>MEYAJ</Text>
-      </View>
-
-      {/* Barra degradada decorativa debajo del nombre */}
-      <LinearGradient
-        colors={['#FF7A1A', '#E91E8F']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={guestStyles.gradientBar}
-      />
-
-      {/* Eslogan */}
-      <Text style={guestStyles.slogan}>Tu talento, tu lugar</Text>
-    </View>
-  );
-}
-
-const guestStyles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  nameKaxt: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: COLORS.primary,      // #003B8E azul oscuro
-    letterSpacing: 0.5,
-  },
-  nameMeyaj: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#E91E8F',            // rosa/fucsia del logo
-    letterSpacing: 0.5,
-  },
-  gradientBar: {
-    height: 3,
-    borderRadius: 2,
-    marginTop: 3,
-    width: '85%',
-  },
-  slogan: {
-    marginTop: 4,
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    fontStyle: 'italic',
-    letterSpacing: 0.3,
-  },
-});
-
-// ─── Screen principal ─────────────────────────────────────────────────────────
-
 export default function HomeScreen() {
-  const tabBarHeight             = useBottomTabBarHeight();
-  const { isLoggedIn, user }     = useUser();
+  const tabBarHeight         = useBottomTabBarHeight();
+  const { isLoggedIn, user } = useUser();
 
   const [search,           setSearch]           = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | 'todas'>('todas');
@@ -139,31 +72,40 @@ export default function HomeScreen() {
     return matchesSearch && matchesCategory && matchesCity;
   });
 
+  // Subtítulo dinámico — lo único que cambia entre sesión e invitado
+  const subtitle = isLoggedIn
+    ? `Hola, ${user.name.split(' ')[0]} · Tu talento, tu lugar`
+    : 'Tu talento, tu lugar';
+
   return (
     <ScreenContainer>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: tabBarHeight + 20 }}
       >
-        {/* ── Header dinámico ── */}
+        {/* ── Header — siempre igual ── */}
         <View style={styles.header}>
-          <View style={styles.leftHeader}>
-            <Image
-              source={require('../../assets/images/isotipo.png')}
-              style={styles.logo}
+          <Image
+            source={require('../../assets/images/isotipo.png')}
+            style={styles.logo}
+          />
+          <View style={styles.headerText}>
+            {/* Nombre con colores del logo */}
+            <View style={styles.appNameRow}>
+              <Text style={styles.appNameKaxt}>KAXT </Text>
+              <Text style={styles.appNameMeyaj}>MEYAJ</Text>
+            </View>
+            {/* Barra degradada */}
+            <LinearGradient
+              colors={['#FF7A1A', '#E91E8F']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradientBar}
             />
-            {isLoggedIn ? (
-              <View>
-                <Text style={styles.greeting}>
-                  Hola, {user.name.split(' ')[0]}
-                </Text>
-                <Text style={styles.subtitle}>
-                  Encuentra oportunidades cerca de ti
-                </Text>
-              </View>
-            ) : (
-              <GuestHeader />
-            )}
+            {/* Subtítulo dinámico */}
+            <Text style={styles.subtitle} numberOfLines={1}>
+              {subtitle}
+            </Text>
           </View>
         </View>
 
@@ -286,15 +228,9 @@ export default function HomeScreen() {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
+  // ── Header
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  leftHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
@@ -304,16 +240,39 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 10,
   },
-  greeting: {
+  headerText: {
+    flex: 1,
+  },
+  appNameRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  appNameKaxt: {
     fontSize: 26,
-    fontWeight: '700',
+    fontWeight: '800',
     color: COLORS.primary,
+    letterSpacing: 0.5,
+  },
+  appNameMeyaj: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#E91E8F',
+    letterSpacing: 0.5,
+  },
+  gradientBar: {
+    height: 2.5,
+    borderRadius: 2,
+    width: '80%',
+    marginTop: 2,
+    marginBottom: 3,
   },
   subtitle: {
-    marginTop: 4,
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.textSecondary,
+    fontStyle: 'italic',
   },
+
+  // ── Search
   searchContainer: {
     marginTop: 20,
     flexDirection: 'row',
@@ -331,6 +290,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: COLORS.textPrimary,
   },
+
+  // ── Stats
   statsRow: {
     flexDirection: 'row',
     gap: 10,
@@ -358,6 +319,8 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 2,
   },
+
+  // ── Sections
   section: {
     marginTop: 24,
   },
@@ -373,6 +336,8 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     marginBottom: 12,
   },
+
+  // ── Category chips
   categoriesContainer: {
     flexDirection: 'row',
     gap: 8,
@@ -400,6 +365,8 @@ const styles = StyleSheet.create({
   categoryTextActive: {
     color: COLORS.white,
   },
+
+  // ── City chips
   cityChip: {
     backgroundColor: COLORS.white,
     paddingHorizontal: 14,
@@ -421,6 +388,8 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontWeight: '600',
   },
+
+  // ── Empty state
   emptyState: {
     alignItems: 'center',
     paddingVertical: 48,
