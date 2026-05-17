@@ -6,10 +6,10 @@ export type UserRole = 'candidato' | 'empresario';
 export type Company = {
   id: string;
   name: string;
-  logo?: string;           // URL cuando haya backend
+  logo?: string;
   description?: string;
-  ownerId: string;         // ID del empresario dueño
-  branches?: string[];     // sucursales
+  ownerId: string;
+  branches?: string[];
 };
 
 export type Job = {
@@ -19,43 +19,29 @@ export type Job = {
   salary: string;
   location: string;
   category: Category;
-
-  // Descripción
   description: string;
   requirements: string[];
   benefits: string[];
-
-  // Horario
   schedule: string;
   workType: WorkType;
-
-  // Perfil
   gender: Gender;
   ageRange?: { min: number; max: number };
   experienceRequired: boolean;
-
-  // Contacto
   contactPhone?: string;
   contactEmail?: string;
-  whatsapp?: string;       // para el botón de WhatsApp
-
-  // CV
-  requiresCv: boolean;     // ¿la vacante pide CV?
-
-  // Meta
+  whatsapp?: string;
+  requiresCv: boolean;
   postedAt: string;
   urgent: boolean;
 };
 
-// -- CV --
 export type CVFile = {
   uri: string;
   name: string;
-  type: string;      // 'application/pdf', 'image/jpeg', etc
+  type: string;
   size?: number;
 };
 
-// -- Aplicación --
 export type ApplicationStatus = 'pendiente' | 'revisando' | 'aceptado' | 'rechazado';
 
 export type Application = {
@@ -67,7 +53,9 @@ export type Application = {
   cvAttached: boolean;
 };
 
-// -- Usuario (lo usaremos como estado global provisional) --
+// ─── favorites: array de jobId ───────────────────────────────────────────────
+// Cuando haya backend: User.favorites vendrá del endpoint GET /users/me
+// y toggleFavorite llamará a POST/DELETE /users/me/favorites/:jobId
 export type User = {
   id: string;
   name: string;
@@ -75,9 +63,9 @@ export type User = {
   role: UserRole;
   cv?: CVFile;
   applications: Application[];
+  favorites: string[];   // ← nuevo campo
 };
 
-// -- Notificaciones --
 export type NotificationType =
   | 'postulacion_enviada'
   | 'empresa_interesada'
@@ -100,7 +88,6 @@ export type Notification = {
   companyName?: string;
 };
 
-// -- Mensajes --
 export type MessageThread = {
   id: string;
   companyName: string;
