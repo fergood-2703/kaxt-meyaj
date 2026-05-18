@@ -35,9 +35,10 @@ import {
 } from 'phosphor-react-native';
 import { useState } from 'react';
 
-import ScreenContainer from '../components/ScreenContainer';
 import ApplicationDetailModal from '../components/modals/ApplicationDetailModal';
+import ChangePasswordModal from '../components/modals/ChangePasswordModal';
 import PhotoOptionsModal from '../components/modals/PhotoOptionsModal';
+import ScreenContainer from '../components/ScreenContainer';
 import { useUser } from '../context/UserContext';
 import { jobs } from '../data/jobs';
 import { COLORS } from '../styles/colors';
@@ -54,17 +55,17 @@ function formatDate(isoString: string): string {
 function CvIcon({ type }: { type: string }) {
   return type.startsWith('image/')
     ? <ImageIcon size={24} color={COLORS.accent} weight="bold" />
-    : <FilePdf   size={24} color={COLORS.accent} weight="bold" />;
+    : <FilePdf size={24} color={COLORS.accent} weight="bold" />;
 }
 
 const STATUS_CONFIG: Record<
   ApplicationStatus,
   { label: string; color: string; bg: string; icon: React.ReactNode }
 > = {
-  pendiente: { label: 'Enviada',         color: '#92400E', bg: '#FEF3C7', icon: <Clock       size={13} color="#92400E" weight="bold" /> },
-  revisando: { label: 'En revisión',     color: '#1E40AF', bg: '#DBEAFE', icon: <FileText    size={13} color="#1E40AF" weight="bold" /> },
-  aceptado:  { label: 'Aceptada',        color: '#166534', bg: '#DCFCE7', icon: <CheckCircle size={13} color="#166534" weight="bold" /> },
-  rechazado: { label: 'No seleccionado', color: '#991B1B', bg: '#FEE2E2', icon: <XCircle     size={13} color="#991B1B" weight="bold" /> },
+  pendiente: { label: 'Enviada', color: '#92400E', bg: '#FEF3C7', icon: <Clock size={13} color="#92400E" weight="bold" /> },
+  revisando: { label: 'En revisión', color: '#1E40AF', bg: '#DBEAFE', icon: <FileText size={13} color="#1E40AF" weight="bold" /> },
+  aceptado: { label: 'Aceptada', color: '#166534', bg: '#DCFCE7', icon: <CheckCircle size={13} color="#166534" weight="bold" /> },
+  rechazado: { label: 'No seleccionado', color: '#991B1B', bg: '#FEE2E2', icon: <XCircle size={13} color="#991B1B" weight="bold" /> },
 };
 
 // ─── Foto pantalla completa ───────────────────────────────────────────────────
@@ -89,13 +90,14 @@ function PhotoFullscreenModal({ visible, photoUri, onClose }: {
 
 export default function ProfileScreen() {
   const tabBarHeight = useBottomTabBarHeight();
-  const router       = useRouter();
+  const router = useRouter();
   const { user, setCv, setProfilePhoto, logout } = useUser();
 
-  const [selectedApp,         setSelectedApp]         = useState<Application | null>(null);
+  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [photoOptionsVisible, setPhotoOptionsVisible] = useState(false);
-  const [photoFullscreen,     setPhotoFullscreen]     = useState(false);
-  const [uploadingCv,         setUploadingCv]         = useState(false);
+  const [photoFullscreen, setPhotoFullscreen] = useState(false);
+  const [uploadingCv, setUploadingCv] = useState(false);
+  const [changePasswordVisible, setChangePasswordVisible] = useState(false);
 
   // ── Foto ──────────────────────────────────────────────────────────────────
 
@@ -135,7 +137,7 @@ export default function ProfileScreen() {
       const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.85 });
       if (!result.canceled && result.assets.length > 0) {
         const asset = result.assets[0];
-        const name  = asset.uri.split('/').pop() ?? 'cv-imagen.jpg';
+        const name = asset.uri.split('/').pop() ?? 'cv-imagen.jpg';
         setCv({ uri: asset.uri, name, type: 'image/jpeg' });
       }
     } catch {
@@ -171,13 +173,13 @@ export default function ProfileScreen() {
   // ── Datos derivados ───────────────────────────────────────────────────────
 
   const applications = user.applications;
-  const totalApps    = applications.length;
+  const totalApps = applications.length;
   const acceptedApps = applications.filter((a) => a.status === 'aceptado').length;
-  const pendingApps  = applications.filter(
+  const pendingApps = applications.filter(
     (a) => a.status === 'pendiente' || a.status === 'revisando'
   ).length;
 
-  const name     = fullName(user);
+  const name = fullName(user);
   const initials = [user.firstName[0], user.lastName[0]]
     .filter(Boolean).join('').toUpperCase() || '?';
 
@@ -324,7 +326,7 @@ export default function ProfileScreen() {
           ) : (
             <View style={styles.applicationsList}>
               {applications.map((app) => {
-                const job    = jobs.find((j) => j.id === app.jobId);
+                const job = jobs.find((j) => j.id === app.jobId);
                 const status = STATUS_CONFIG[app.status];
                 if (!job) return null;
                 return (
@@ -407,7 +409,7 @@ export default function ProfileScreen() {
 
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => Alert.alert('Próximamente', 'El cambio de contraseña estará disponible cuando el backend esté listo.')}
+              onPress={() => setChangePasswordVisible(true)}
             >
               <LockKey size={20} color={COLORS.primary} weight="bold" />
               <Text style={styles.menuItemText}>Cambiar contraseña</Text>
@@ -445,6 +447,12 @@ export default function ProfileScreen() {
         application={selectedApp}
         onClose={() => setSelectedApp(null)}
       />
+
+      <ChangePasswordModal
+        visible={changePasswordVisible}
+        onClose={() => setChangePasswordVisible(false)}
+      />
+
     </ScreenContainer>
   );
 }

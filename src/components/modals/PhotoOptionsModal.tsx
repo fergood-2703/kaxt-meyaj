@@ -1,26 +1,23 @@
 import {
-    Alert,
-    Image,
-    Modal,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 import * as ImagePicker from 'expo-image-picker';
 import {
-    Camera,
-    Eye,
-    Image as ImageIcon,
-    Trash,
-    X,
+  Camera,
+  Eye,
+  Image as ImageIcon,
+  Trash,
+  X,
 } from 'phosphor-react-native';
 
 import { COLORS } from '../../styles/colors';
-
-// ─── Helpers de galería / cámara ─────────────────────────────────────────────
-// Exportados para que ProfileScreen pueda usarlos también si los necesita
 
 export async function takePhoto(
   setProfilePhoto: (uri: string) => void,
@@ -66,8 +63,6 @@ export async function pickFromGallery(
   }
 }
 
-// ─── Componente ───────────────────────────────────────────────────────────────
-
 type Props = {
   visible: boolean;
   photoUri?: string;
@@ -88,6 +83,10 @@ export default function PhotoOptionsModal({
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
+
+        {/* Fondo oscuro toca para cerrar */}
+        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onClose} />
+
         <View style={styles.sheet}>
           <View style={styles.header}>
             <Text style={styles.title}>Foto de perfil</Text>
@@ -103,7 +102,6 @@ export default function PhotoOptionsModal({
           )}
 
           <View style={styles.options}>
-            {/* Ver en pantalla completa */}
             {photoUri && (
               <TouchableOpacity
                 style={styles.option}
@@ -120,7 +118,6 @@ export default function PhotoOptionsModal({
               </TouchableOpacity>
             )}
 
-            {/* Tomar foto */}
             <TouchableOpacity
               style={styles.option}
               onPress={() => takePhoto(setProfilePhoto, onClose)}
@@ -135,7 +132,6 @@ export default function PhotoOptionsModal({
               </View>
             </TouchableOpacity>
 
-            {/* Elegir de galería */}
             <TouchableOpacity
               style={styles.option}
               onPress={() => pickFromGallery(setProfilePhoto, onClose)}
@@ -150,7 +146,6 @@ export default function PhotoOptionsModal({
               </View>
             </TouchableOpacity>
 
-            {/* Eliminar foto */}
             {photoUri && (
               <TouchableOpacity
                 style={[styles.option, styles.optionDanger]}
@@ -161,9 +156,7 @@ export default function PhotoOptionsModal({
                   <Trash size={22} color="#991B1B" weight="bold" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.optionTitle, { color: '#991B1B' }]}>
-                    Eliminar foto
-                  </Text>
+                  <Text style={[styles.optionTitle, { color: '#991B1B' }]}>Eliminar foto</Text>
                   <Text style={styles.optionSubtitle}>Volver a las iniciales</Text>
                 </View>
               </TouchableOpacity>
