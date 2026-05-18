@@ -64,14 +64,14 @@ export type User = {
   name: string;
   email: string;
   role: UserRole;
+  phone?: string;           // ← nuevo, opcional
+  profilePhoto?: string;    // ← nuevo, URI local hasta que haya backend
   cv?: CVFile;
   applications: Application[];
   favorites: string[];
 };
 
 // ─── Notificaciones ───────────────────────────────────────────────────────────
-// Backend TODO: GET /api/notifications  →  poblar array al hacer login
-// Cada addNotification() será también POST /api/notifications
 export type NotificationType =
   | 'postulacion_enviada'
   | 'empresa_interesada'
@@ -79,11 +79,11 @@ export type NotificationType =
   | 'postulacion_aceptada'
   | 'postulacion_rechazada'
   | 'vacante_nueva'
-  | 'vacante_guardada'   // al guardar favorito
+  | 'vacante_guardada'
   | 'perfil_incompleto'
-  | 'cv_subido'          // al subir/cambiar CV
+  | 'cv_subido'
   | 'cv_faltante'
-  | 'bienvenida'         // al completar registro
+  | 'bienvenida'
   | 'mensaje';
 
 export type Notification = {
