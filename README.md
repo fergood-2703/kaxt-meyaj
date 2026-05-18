@@ -45,9 +45,12 @@ Este proyecto está siendo desarrollado como parte de Innovatec y tiene como obj
 1. Instalar dependencias
 bash
    npm install
-2. Iniciar el proyecto
+2. instalar dependendia firebase
+    npm install firebase   
+4. Iniciar el proyecto
 bash
    npx expo start
+   
 
 ---
 
