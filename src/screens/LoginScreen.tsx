@@ -147,7 +147,7 @@ export default function RegisterScreen() {
           style={styles.input}
         />
 
-        {/* INPUT PASSWORD */}
+        {/* INPUT PASSWOR */}
 
         <TextInput
           placeholder="Contraseña"
