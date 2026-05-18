@@ -14,6 +14,7 @@ export default function RootLayout() {
         <Stack.Screen name="register" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="job/[id]" />
+        <Stack.Screen name="personal-info" />
       </Stack>
     </UserProvider>
   );

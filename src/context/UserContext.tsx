@@ -5,16 +5,16 @@ type UserContextType = {
   // Auth
   isLoggedIn: boolean;
   isGuest: boolean;
-  login: (name: string, email: string) => void;
+  login: (firstName: string, lastName: string, email: string) => void;
   continueAsGuest: () => void;
   logout: () => void;
 
   // Usuario
   user: User;
   setCv: (cv: CVFile | undefined) => void;
-  // Backend TODO: PATCH /api/users/me  { name, phone }
-  updateProfile: (name: string, phone?: string) => void;
-  // Backend TODO: POST /api/users/me/photo  (multipart)
+  // Backend TODO: PATCH /api/users/me  { firstName, lastName, phone, birthDate }
+  updateProfile: (data: Partial<Pick<User, 'firstName' | 'lastName' | 'phone' | 'birthDate' | 'gender'>>) => void;
+  // Backend TODO: POST /api/users/me/photo  |  DELETE /api/users/me/photo
   setProfilePhoto: (uri: string) => void;
 
   // Postulaciones
@@ -22,12 +22,10 @@ type UserContextType = {
   hasApplied: (jobId: string) => boolean;
 
   // Favoritos
-  // Backend TODO: POST/DELETE /api/users/me/favorites/:jobId
   toggleFavorite: (jobId: string, jobTitle?: string, companyName?: string) => void;
   isFavorite: (jobId: string) => boolean;
 
   // Notificaciones
-  // Backend TODO: GET /api/notifications  |  PATCH /api/notifications/:id/read
   notifications: Notification[];
   addNotification: (n: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
   markAsRead: (id: string) => void;
@@ -37,10 +35,12 @@ type UserContextType = {
 
 const defaultUser: User = {
   id: 'u1',
-  name: '',
+  firstName: '',
+  lastName: '',
   email: '',
   role: 'candidato',
   phone: undefined,
+  birthDate: undefined,
   profilePhoto: undefined,
   cv: undefined,
   applications: [],
@@ -50,21 +50,21 @@ const defaultUser: User = {
 const UserContext = createContext<UserContextType | null>(null);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn]     = useState(false);
-  const [isGuest, setIsGuest]           = useState(false);
-  const [user, setUser]                 = useState<User>(defaultUser);
+  const [isLoggedIn, setIsLoggedIn]       = useState(false);
+  const [isGuest,    setIsGuest]          = useState(false);
+  const [user,       setUser]             = useState<User>(defaultUser);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // ── Auth ──────────────────────────────────────────────────────────────────
 
-  const login = (name: string, email: string) => {
-    setUser((prev) => ({ ...prev, name, email }));
+  const login = (firstName: string, lastName: string, email: string) => {
+    setUser((prev) => ({ ...prev, firstName, lastName, email }));
     setIsLoggedIn(true);
     setIsGuest(false);
     addNotificationInternal({
       type: 'bienvenida',
       title: '¡Bienvenido a Kaxt Meyaj!',
-      body: `Hola ${name}, encuentra oportunidades cerca de ti en Quintana Roo.`,
+      body: `Hola ${firstName}, encuentra oportunidades cerca de ti en Quintana Roo.`,
     });
   };
 
@@ -93,9 +93,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateProfile = (name: string, phone?: string) => {
-    setUser((prev) => ({ ...prev, name, phone }));
-    // Backend TODO: await api.patch('/users/me', { name, phone })
+  const updateProfile = (data: Partial<Pick<User, 'firstName' | 'lastName' | 'phone' | 'birthDate' | 'gender'>>) => {
+    setUser((prev) => ({ ...prev, ...data }));
+    // Backend TODO: await api.patch('/users/me', data)
   };
 
   const setProfilePhoto = (uri: string) => {
@@ -142,16 +142,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // ── Notificaciones ────────────────────────────────────────────────────────
 
-  const addNotificationInternal = (
-    n: Omit<Notification, 'id' | 'timestamp' | 'read'>
-  ) => {
-    const newNotif: Notification = {
-      ...n,
-      id: Date.now().toString() + Math.random().toString(36).slice(2),
-      timestamp: new Date().toISOString(),
-      read: false,
-    };
-    setNotifications((prev) => [newNotif, ...prev]);
+  const addNotificationInternal = (n: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+    setNotifications((prev) => [
+      {
+        ...n,
+        id: Date.now().toString() + Math.random().toString(36).slice(2),
+        timestamp: new Date().toISOString(),
+        read: false,
+      },
+      ...prev,
+    ]);
   };
 
   const addNotification = (n: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
@@ -159,9 +159,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
   };
 
   const markAllAsRead = () => {
@@ -171,15 +169,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <UserContext.Provider
-      value={{
-        isLoggedIn, isGuest, login, continueAsGuest, logout,
-        user, setCv, updateProfile, setProfilePhoto,
-        addApplication, hasApplied,
-        toggleFavorite, isFavorite,
-        notifications, addNotification, markAsRead, markAllAsRead, unreadCount,
-      }}
-    >
+    <UserContext.Provider value={{
+      isLoggedIn, isGuest, login, continueAsGuest, logout,
+      user, setCv, updateProfile, setProfilePhoto,
+      addApplication, hasApplied,
+      toggleFavorite, isFavorite,
+      notifications, addNotification, markAsRead, markAllAsRead, unreadCount,
+    }}>
       {children}
     </UserContext.Provider>
   );

@@ -36,7 +36,7 @@ export default function EditProfileModal({
       Alert.alert('Error', 'El nombre no puede estar vacío.');
       return;
     }
-    updateProfile(name.trim(), phone.trim() || undefined);
+    updateProfile({ firstName: name.trim(), phone: phone.trim() || undefined });
     onClose();
   };
 

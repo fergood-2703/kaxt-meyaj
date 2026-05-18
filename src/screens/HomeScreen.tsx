@@ -26,7 +26,7 @@ import ScreenContainer from '../components/ScreenContainer';
 import { useUser } from '../context/UserContext';
 import { jobs } from '../data/jobs';
 import { COLORS } from '../styles/colors';
-import { Category } from '../types';
+import { Category, fullName } from '../types';
 
 const CITIES = ['Todas', 'Felipe Carrillo Puerto', 'Tulum', 'Bacalar'];
 
@@ -74,7 +74,7 @@ export default function HomeScreen() {
 
   // Subtítulo dinámico — lo único que cambia entre sesión e invitado
   const subtitle = isLoggedIn
-    ? `Hola, ${user.name.split(' ')[0]} · Tu talento, tu lugar`
+    ? `Hola, ${fullName(user).split(' ')[0]} · Encuentra oportunidades cerca de ti`
     : 'Tu talento, tu lugar';
 
   return (

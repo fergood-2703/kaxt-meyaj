@@ -1,12 +1,8 @@
 export type WorkType = 'tiempo-completo' | 'medio-tiempo' | 'por-horas';
-export type Gender = 'hombre' | 'mujer' | 'indistinto';
+export type Gender   = 'hombre' | 'mujer' | 'indistinto';
 export type Category =
-  | 'hoteles'
-  | 'restaurantes'
-  | 'turismo'
-  | 'oficina'
-  | 'construccion'
-  | 'otro';
+  | 'hoteles' | 'restaurantes' | 'turismo'
+  | 'oficina' | 'construccion' | 'otro';
 export type UserRole = 'candidato' | 'empresario';
 
 export type Company = {
@@ -59,17 +55,27 @@ export type Application = {
   cvAttached: boolean;
 };
 
+export type UserGender = 'hombre' | 'mujer' | 'no-binario' | 'prefiero-no-decir';
+
 export type User = {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: UserRole;
-  phone?: string;           // ← nuevo, opcional
-  profilePhoto?: string;    // ← nuevo, URI local hasta que haya backend
+  phone?: string;
+  birthDate?: string;
+  gender?: UserGender;
+  profilePhoto?: string;
   cv?: CVFile;
   applications: Application[];
   favorites: string[];
 };
+
+// Computed helper — nombre completo para mostrar en UI
+export function fullName(user: Pick<User, 'firstName' | 'lastName'>): string {
+  return `${user.firstName} ${user.lastName}`.trim();
+}
 
 // ─── Notificaciones ───────────────────────────────────────────────────────────
 export type NotificationType =

@@ -37,12 +37,11 @@ import { useState } from 'react';
 
 import ScreenContainer from '../components/ScreenContainer';
 import ApplicationDetailModal from '../components/modals/ApplicationDetailModal';
-import EditProfileModal from '../components/modals/EditProfileModal';
 import PhotoOptionsModal from '../components/modals/PhotoOptionsModal';
 import { useUser } from '../context/UserContext';
 import { jobs } from '../data/jobs';
 import { COLORS } from '../styles/colors';
-import { Application, ApplicationStatus } from '../types';
+import { Application, ApplicationStatus, fullName } from '../types';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -68,7 +67,7 @@ const STATUS_CONFIG: Record<
   rechazado: { label: 'No seleccionado', color: '#991B1B', bg: '#FEE2E2', icon: <XCircle     size={13} color="#991B1B" weight="bold" /> },
 };
 
-// ─── Foto pantalla completa (pequeño, solo se usa aquí) ───────────────────────
+// ─── Foto pantalla completa ───────────────────────────────────────────────────
 
 function PhotoFullscreenModal({ visible, photoUri, onClose }: {
   visible: boolean; photoUri?: string; onClose: () => void;
@@ -94,7 +93,6 @@ export default function ProfileScreen() {
   const { user, setCv, setProfilePhoto, logout } = useUser();
 
   const [selectedApp,         setSelectedApp]         = useState<Application | null>(null);
-  const [editModalVisible,    setEditModalVisible]    = useState(false);
   const [photoOptionsVisible, setPhotoOptionsVisible] = useState(false);
   const [photoFullscreen,     setPhotoFullscreen]     = useState(false);
   const [uploadingCv,         setUploadingCv]         = useState(false);
@@ -118,8 +116,7 @@ export default function ProfileScreen() {
     try {
       setUploadingCv(true);
       const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf'],
-        copyToCacheDirectory: true,
+        type: ['application/pdf'], copyToCacheDirectory: true,
       });
       if (!result.canceled && result.assets.length > 0) {
         const asset = result.assets[0];
@@ -179,7 +176,10 @@ export default function ProfileScreen() {
   const pendingApps  = applications.filter(
     (a) => a.status === 'pendiente' || a.status === 'revisando'
   ).length;
-  const initials = user.name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase() || '?';
+
+  const name     = fullName(user);
+  const initials = [user.firstName[0], user.lastName[0]]
+    .filter(Boolean).join('').toUpperCase() || '?';
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -208,7 +208,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
 
           <View style={{ flex: 1 }}>
-            <Text style={styles.userName}>{user.name}</Text>
+            <Text style={styles.userName}>{name || 'Sin nombre'}</Text>
             <Text style={styles.userEmail}>{user.email}</Text>
             {user.phone && <Text style={styles.userPhone}>{user.phone}</Text>}
             <View style={styles.roleBadge}>
@@ -217,7 +217,11 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.editButton} onPress={() => setEditModalVisible(true)}>
+          {/* Botón editar → va a PersonalInfoScreen */}
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => router.push('/personal-info' as any)}
+          >
             <PencilSimple size={18} color={COLORS.primary} weight="bold" />
           </TouchableOpacity>
         </View>
@@ -376,7 +380,11 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Cuenta</Text>
           <View style={styles.menuCard}>
-            <TouchableOpacity style={styles.menuItem} onPress={() => setEditModalVisible(true)}>
+            {/* → navega a PersonalInfoScreen */}
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => router.push('/personal-info' as any)}
+            >
               <UserCircle size={20} color={COLORS.primary} weight="bold" />
               <Text style={styles.menuItemText}>Información personal</Text>
               <ArrowRight size={18} color={COLORS.textSecondary} weight="bold" />
@@ -384,7 +392,10 @@ export default function ProfileScreen() {
 
             <View style={styles.menuDivider} />
 
-            <TouchableOpacity style={styles.menuItem} onPress={() => setPhotoOptionsVisible(true)}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => setPhotoOptionsVisible(true)}
+            >
               <Camera size={20} color={COLORS.primary} weight="bold" />
               <Text style={styles.menuItemText}>
                 {user.profilePhoto ? 'Ver / cambiar foto de perfil' : 'Agregar foto de perfil'}
@@ -433,13 +444,6 @@ export default function ProfileScreen() {
       <ApplicationDetailModal
         application={selectedApp}
         onClose={() => setSelectedApp(null)}
-      />
-
-      <EditProfileModal
-        visible={editModalVisible}
-        onClose={() => setEditModalVisible(false)}
-        initialName={user.name}
-        initialPhone={user.phone ?? ''}
       />
     </ScreenContainer>
   );

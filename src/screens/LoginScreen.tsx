@@ -22,7 +22,8 @@ import { COLORS } from '../styles/colors';
 // Eliminar cuando el backend esté listo y reemplazar handleLogin
 // con: await api.post('/auth/login', { email, password })
 const DEMO_ACCOUNT = {
-  name:     'Fernando',
+  firstName: 'Fernando',
+  lastName:  'Puc',
   email:    'demo@kaxtmeyaj.com',
   password: 'kaxt2024',
 };
@@ -52,7 +53,7 @@ export default function LoginScreen() {
       password === DEMO_ACCOUNT.password
     ) {
       setError('');
-      login(DEMO_ACCOUNT.name, DEMO_ACCOUNT.email);
+      login(DEMO_ACCOUNT.firstName, DEMO_ACCOUNT.lastName, DEMO_ACCOUNT.email);
       router.replace('/');
       return;
     }
