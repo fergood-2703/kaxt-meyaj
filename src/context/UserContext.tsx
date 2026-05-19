@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useContext, useState } from 'react';
-import { Application, CVFile, Notification, User } from '../types';
+import { Application, CVFile, Notification, User, UserGender, UserRole } from '../types';
 
 type UserContextType = {
   // Auth
@@ -31,6 +31,17 @@ type UserContextType = {
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   unreadCount: number;
+
+  register: (data: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phone: string;
+  birthDate: string;
+  gender: UserGender;
+  role: UserRole;
+}) => void;
 };
 
 const defaultUser: User = {
@@ -168,13 +179,45 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  // ── Registro ────────────────────────────────────────────────────────
+  const register = (data: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phone: string;
+  birthDate: string;
+  gender: UserGender;
+  role: UserRole;
+}) => {
+  // Backend TODO: await api.post('/auth/register', data)
+  setUser((prev) => ({
+    ...prev,
+    firstName: data.firstName,
+    lastName:  data.lastName,
+    email:     data.email,
+    phone:     data.phone,
+    birthDate: data.birthDate,
+    gender:    data.gender,
+    role:      data.role,
+  }));
+  setIsLoggedIn(true);
+  setIsGuest(false);
+  addNotificationInternal({
+    type: 'bienvenida',
+    title: '¡Bienvenido a Kaxt Meyaj!',
+    body: `Hola ${data.firstName}, encuentra oportunidades cerca de ti en Quintana Roo.`,
+  });
+  // Backend TODO: await api.post('/auth/register', data)
+};
+
   return (
     <UserContext.Provider value={{
       isLoggedIn, isGuest, login, continueAsGuest, logout,
       user, setCv, updateProfile, setProfilePhoto,
       addApplication, hasApplied,
       toggleFavorite, isFavorite,
-      notifications, addNotification, markAsRead, markAllAsRead, unreadCount,
+      notifications, addNotification, markAsRead, markAllAsRead, unreadCount,register,
     }}>
       {children}
     </UserContext.Provider>

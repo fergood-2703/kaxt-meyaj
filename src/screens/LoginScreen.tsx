@@ -191,7 +191,7 @@ export default function LoginScreen() {
           {/* Crear cuenta */}
           <TouchableOpacity
             style={styles.registerButton}
-            onPress={() => router.push('/register')}
+            onPress={() => router.push('/role-select')}
             activeOpacity={0.85}
           >
             <UserCircle size={18} color={COLORS.primary} weight="bold" />
