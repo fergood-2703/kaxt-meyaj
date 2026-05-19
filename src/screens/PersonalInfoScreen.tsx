@@ -1,8 +1,9 @@
-import { useRouter } from 'expo-router';
-import { ArrowLeft, CalendarBlank, Camera, CaretRight, EnvelopeSimple, GenderFemale, GenderIntersex, GenderMale, GenderNeuter, IdentificationCard, LockKey, PencilSimple, Phone, User, X } from 'phosphor-react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { ArrowLeft, CalendarBlank, Camera, CaretRight, EnvelopeSimple, GenderFemale, GenderIntersex, GenderMale, GenderNeuter, IdentificationCard, LockKey, PencilSimple, Phone, User, X, FilePdf } from 'phosphor-react-native';
 import { useState } from 'react';
 import { Alert, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import CvUploadModal from '../components/modals/CvUploadModal';
 import ScreenContainer from '../components/ScreenContainer';
 import ChangePasswordModal from '../components/modals/ChangePasswordModal';
 import DatePickerModal from '../components/modals/DatePickerModal';
@@ -79,10 +80,13 @@ type EditingField = 'firstName' | 'lastName' | 'phone' | 'password' | 'date' | '
 export default function PersonalInfoScreen() {
   const router = useRouter();
   const { user, updateProfile, setProfilePhoto } = useUser();
+  const params = useLocalSearchParams<{ from?: string }>();
+  const fromWelcome = params.from === 'welcome';
 
   const [editing,             setEditing]             = useState<EditingField>(null);
   const [photoOptionsVisible, setPhotoOptionsVisible] = useState(false);
   const [photoFullscreen,     setPhotoFullscreen]     = useState(false);
+  const [cvModalVisible, setCvModalVisible] = useState(false);
 
   const initials = [user.firstName[0], user.lastName[0]].filter(Boolean).join('').toUpperCase() || '?';
 
@@ -101,7 +105,8 @@ export default function PersonalInfoScreen() {
 
   return (
     <ScreenContainer>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+      <TouchableOpacity style={styles.backButton} onPress={() => fromWelcome ? router.replace('/') : router.back()}
+>
         <ArrowLeft size={20} color={COLORS.primary} weight="bold" />
         <Text style={styles.backText}>Mi perfil</Text>
       </TouchableOpacity>
@@ -137,6 +142,26 @@ export default function PersonalInfoScreen() {
             <InfoRow iconBg={FIELD_COLORS.telefono.bg} icon={<Phone size={18} color={FIELD_COLORS.telefono.icon} weight="bold" />} label="Teléfono" value={user.phone ?? ''} onEdit={() => setEditing('phone')} />
           </View>
         </View>
+
+        <View style={styles.section}>
+  <Text style={styles.sectionTitle}>Mi CV</Text>
+  <TouchableOpacity
+    style={styles.infoRow}
+    onPress={() => setCvModalVisible(true)}
+    activeOpacity={0.75}
+  >
+    <View style={[styles.infoRowIconBox, { backgroundColor: '#FDF2F8' }]}>
+      <FilePdf size={18} color={COLORS.accent} weight="bold" />
+    </View>
+    <View style={styles.infoRowContent}>
+      <Text style={styles.infoRowLabel}>Currículum Vitae</Text>
+      <Text style={[styles.infoRowValue, !user.cv && styles.infoRowEmpty]}>
+        {user.cv ? user.cv.name : 'Sin CV cargado'}
+      </Text>
+    </View>
+    <CaretRight size={16} color={COLORS.border} weight="bold" />
+  </TouchableOpacity>
+</View>
 
         {/* Cuenta */}
         <View style={styles.section}>
@@ -210,6 +235,12 @@ export default function PersonalInfoScreen() {
           )}
         </View>
       </Modal>
+
+      <CvUploadModal
+  visible={cvModalVisible}
+  onClose={() => setCvModalVisible(false)}
+/>
+
     </ScreenContainer>
   );
 }

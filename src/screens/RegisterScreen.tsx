@@ -188,7 +188,8 @@ export default function RegisterScreen() {
       gender:    gender!,
       role,
     });
-    router.replace('/');
+    router.replace('/welcome' as any);
+
   };
 
   // ── Render ──────────────────────────────────────────────────────────────────
