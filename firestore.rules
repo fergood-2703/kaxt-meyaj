@@ -1,0 +1,46 @@
+rules_version = '2';
+
+// Reglas de seguridad de Firestore para Kaxt Meyaj.
+// Cópialas en: consola de Firebase -> Firestore Database -> Reglas -> Publicar.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Perfiles de usuario: cada quien lee y edita solo el suyo.
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Vacantes: visibles para todos (incluye invitados).
+    // Solo el empresario dueño puede crear, editar o borrar las suyas.
+    match /jobs/{jobId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.auth.uid == request.resource.data.ownerId;
+      allow update, delete: if request.auth != null
+                            && request.auth.uid == resource.data.ownerId;
+    }
+
+    // Postulaciones: el candidato crea las suyas; el candidato y el
+    // empresario dueño de la vacante pueden leerlas; solo el empresario
+    // dueño puede actualizar el estado.
+    match /applications/{appId} {
+      allow create: if request.auth != null
+                    && request.auth.uid == request.resource.data.candidateId;
+      allow read: if request.auth != null
+                  && (request.auth.uid == resource.data.candidateId
+                      || request.auth.uid == resource.data.ownerId);
+      allow update: if request.auth != null
+                    && request.auth.uid == resource.data.ownerId;
+    }
+
+    // Notificaciones: cualquier usuario autenticado puede crear una
+    // (para avisar a otro); el destinatario la lee y la marca como leída.
+    match /notifications/{notifId} {
+      allow create: if request.auth != null;
+      allow read, update: if request.auth != null
+                          && request.auth.uid == resource.data.userId;
+    }
+  }
+}
